@@ -1,0 +1,35 @@
+{
+    "name": "Mi IP·RED Plantel Exterior",
+    "short_name": "Mi IP·RED Plantel Exterior",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0175C2",
+    "theme_color": "#0175C2",
+    "description": "Portal de clientes Mi IP·RED Plantel Exterior para consultar facturas, recibos, débitos y créditos.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
