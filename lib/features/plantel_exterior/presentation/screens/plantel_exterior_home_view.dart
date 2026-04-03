@@ -25,9 +25,9 @@ class PlantelExteriorHomeView extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Superficie inicial del nuevo producto para gestión técnica de infraestructura pasiva FTTH. '
-                'En esta fase se reemplaza el dashboard cliente heredado como pantalla principal '
-                'y se prepara una navegación base escalable para futuras etapas.',
+                'Phase 0.2.2 incorpora la primera base real de dominio del producto. '
+                'La app mantiene runtime, login, sesión y backend intactos, pero ahora suma entidades tipadas, '
+                'value objects y contratos base para evolucionar hacia CRUD, persistencia local y offline simple.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -45,7 +45,7 @@ class PlantelExteriorHomeView extends StatelessWidget {
                   ),
                   InfoCard(
                     title: 'Estado actual',
-                    value: 'Skeleton funcional',
+                    value: 'Dominio base tipado',
                   ),
                 ],
               ),
@@ -74,15 +74,15 @@ class PlantelExteriorHomeView extends StatelessWidget {
                       ),
                       _buildBullet(
                         context,
-                        'La app deja de mostrar el dashboard cliente como superficie principal.',
+                        'La superficie principal sigue desacoplada del dashboard cliente heredado.',
                       ),
                       _buildBullet(
                         context,
-                        'Se incorpora una navegación base preparada para crecer.',
+                        'El dominio ya existe como código real y no solo como placeholders visuales.',
                       ),
                       _buildBullet(
                         context,
-                        'Las entidades del dominio ya existen visualmente como secciones reales.',
+                        'Se preparan contratos base para persistencia y sincronización futuras.',
                       ),
                       if (isCompact) const SizedBox(height: 6),
                     ],
