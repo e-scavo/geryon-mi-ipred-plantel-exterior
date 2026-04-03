@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/common_vars.dart';
 import 'package:mi_ipred_plantel_exterior/core/utils/utils.dart';
-import 'package:mi_ipred_plantel_exterior/features/dashboard/presentation/dashboard_page.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/plantel_exterior_home_screen.dart';
 import 'package:mi_ipred_plantel_exterior/models/GeneralLoadingProgress/popup_model.dart';
 
 void main() async {
@@ -19,7 +19,7 @@ void main() async {
   }
 
   runApp(
-    ProviderScope(
+    const ProviderScope(
       child: MyApp(),
     ),
   );
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       title: 'Mi IP·RED Plantel Exterior',
       debugShowCheckedModeBanner: false,
       theme: ipredTheme,
-      home: MyStartingPage(),
+      home: const MyStartingPage(),
     );
   }
 }
@@ -111,7 +111,6 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
   }
 
   Future<void> _initWork() async {
-    const functionName = '_initWork';
     const logFunctionName = '.::_initWork::.';
 
     developer.log(
@@ -119,7 +118,7 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
       name: '$logClassName - $logFunctionName',
     );
 
-    var appStatus = ref.read(notifierServiceProvider);
+    final appStatus = ref.read(notifierServiceProvider);
 
     developer.log(
       'initStage:${appStatus.initStage.toString()}',
@@ -161,7 +160,6 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
 
   @override
   Widget build(BuildContext context) {
-    const functionName = 'BUILD';
     const logFunctionName = '.::BUILD::.';
     buildTimes++;
 
@@ -212,6 +210,6 @@ class _MyStartingPageState extends ConsumerState<MyStartingPage> {
       );
     }
 
-    return DashboardPage(clientID: -1);
+    return const PlantelExteriorHomeScreen();
   }
 }

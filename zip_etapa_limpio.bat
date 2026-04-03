@@ -8,14 +8,14 @@ if "%~1"=="" (
 
 set "ETAPA=%~1"
 set "PROJECT_DIR=%cd%"
-set "OUTPUT_FILE=%cd%\..\geryon-mi-ipred-%ETAPA%.zip"
-set "TEMP_DIR=%temp%\geryon_mi_ipred_zip_%random%%random%"
+set "OUTPUT_FILE=%cd%\..\geryon-mi-ipred-plantel-exterior-%ETAPA%.zip"
+set "TEMP_DIR=%temp%\geryon_mi_ipred_plantel_exterior_zip_%random%%random%"
 
 echo.
 echo Preparando copia temporal...
 mkdir "%TEMP_DIR%"
 
-robocopy "%PROJECT_DIR%" "%TEMP_DIR%" /E /XD distribution/submissions dist .git .dart_tool build .idea .vscode >nul
+robocopy "%PROJECT_DIR%" "%TEMP_DIR%" /E /XD windows\flutter\ephemeral distribution/submissions dist .fvm .git .dart_tool build .idea .vscode >nul
 
 if errorlevel 8 (
     echo ERROR: fallo robocopy.
