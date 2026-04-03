@@ -6,7 +6,7 @@ The flows described here correspond to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.1 — Controlled Clone & Technical Identity Baseline
+- Phase 0.2.1 — Domain Skeleton & Navigation Entry
 
 At this stage, flows are inherited from Mi IP·RED and must be preserved without functional redesign.
 
@@ -119,19 +119,14 @@ Flow:
 
 Sources:
 
-    lib/core/transport/
-    lib/models/GeryonSocket/
+    transport/websocket-related modules
+    ServiceProvider integration points
 
 Characteristics:
 
-- persistent connection
-- retry logic present
-- tightly coupled with runtime
-
-Failure handling:
-
-- retry connection
-- surface error state to runtime
+- critical system flow
+- must remain unbroken
+- tightly coupled with startup lifecycle
 
 ---
 
@@ -139,21 +134,22 @@ Failure handling:
 
 Flow:
 
-    After connection
-        → check session/token
-        → validate with backend
-        → either:
-            → continue authenticated session
-            → request login
+    Session available?
+        → yes → attempt authenticated continuity
+        → no → request login
+
+Then:
+
+    login request
+        → backend validation
+        → runtime state update
+        → session persistence
 
 Characteristics:
 
-- automatic when possible
-- user interaction only if required
-
-Important:
-
-Login flow must not be broken during bootstrap.
+- centralized in runtime/service flow
+- must not be rewritten during bootstrap
+- visible UI is secondary to runtime decision
 
 ---
 
@@ -161,128 +157,128 @@ Login flow must not be broken during bootstrap.
 
 Flow:
 
-    Config loaded
-    + Session resolved
-    + Backend connected
-        → runtime enters READY state
+    ServiceProvider startup complete
+        → state marked ready
+        → UI may render operational screen
 
-Effects:
+This flow is critical because UI readiness depends on runtime readiness.
 
-- UI can render main screens
-- actions can be executed
-- backend requests enabled
+The UI must not bypass this sequence.
 
 ---
 
 ## 7. UI Interaction Flow
 
-Flow:
+At the current stage, UI interaction remains reactive:
 
-    UI event
-        → provider call
-        → ServiceProvider method
-        → backend request (if needed)
-        → response handled
-        → state updated
-        → UI re-render
+    User action
+        → UI event
+        → provider/runtime interaction
+        → state update
+        → UI rebuild
 
 Characteristics:
 
-- UI is reactive, not authoritative
-- all logic flows through ServiceProvider
-- no direct backend calls from UI
+- UI is not the source of truth
+- runtime/provider state controls behavior
+- inherited UI still exists during bootstrap
 
 ---
 
-## 8. Request / Response Flow (Backend)
+## 8. Backend Request / Response Flow
 
-Flow:
+Conceptual flow:
 
-    UI or runtime
-        → build request (Table / ActionRequest)
-        → send via WebSocket
-        → await response
-        → parse response
-        → update models/state
+    UI or runtime event
+        → request construction
+        → WebSocket send
+        → backend processing
+        → response receive
+        → state/model update
+        → UI refresh if needed
 
-Sources:
+Critical rule:
 
-    lib/models/tbl_*/
-    lib/models/GenericDataModel/
-    lib/models/Common*/*
-
-Characteristics:
-
-- strongly tied to backend contract
-- no DTO abstraction layer
-- transport is stateful
+- this flow must remain compatible with the inherited backend contract
 
 ---
 
 ## 9. File Handling Flow
 
-Flow:
+The inherited application includes file-related abstractions to support:
 
-    Backend response (file data)
-        → processed by runtime
-        → passed to file abstraction
-        → saved or downloaded
+- cross-platform compatibility
+- asset access
+- stored file operations
+- future extensibility
 
-Sources:
-
-    lib/core/files/
-
-Characteristics:
-
-- platform-specific handling
-- unified abstraction for Web and IO
+At the current stage, file handling is not the primary focus, but its abstractions remain part of the runtime baseline.
 
 ---
 
-## Flow Dependencies
+## Flow Preservation Rule
 
-Critical dependencies between flows:
+During bootstrap phases, the following flows must remain preserved:
 
-- Configuration must complete before backend connection
-- Session restore must complete before login continuity
-- Backend connection must exist before requests
-- Runtime must be READY before UI actions
+- startup
+- backend connect
+- login/session restore
+- request/response
+- runtime ready transition
 
----
-
-## Error Handling Strategy
-
-Errors can occur in:
-
-- configuration load
-- session restore
-- backend connection
-- request/response cycle
-
-Handling approach:
-
-- retry where possible
-- fail fast when critical
-- surface state to runtime
-- avoid UI-level error ownership
+Any break in these flows is considered a regression.
 
 ---
 
-## Transitional State (Phase 0.1)
+## UI vs Runtime Ownership
 
-During this phase:
+This repository follows a strong ownership model:
 
-- flows remain unchanged from original app
-- UI may not match final domain
-- some flows may appear unrelated to plantel exterior
+### Runtime owns:
 
-This is expected.
+- startup orchestration
+- connection lifecycle
+- session restoration
+- backend state
+
+### UI owns:
+
+- rendering
+- user interaction capture
+- reactive presentation
+
+This distinction must remain intact.
 
 ---
 
-## What Phase 0.1 Changes in Flows
+## Transitional Flow State
 
-Phase 0.1 does NOT change flow logic.
+Because the repository is still in Stage 0:
+
+- inherited UI/product flows may still appear
+- some visible screens may not match the final target product yet
+- this is acceptable only if core technical flows remain intact
+
+This is a transitional condition, not the final state.
+
+---
+
+## Why flows must not be rewritten early
+
+Premature flow rewrites are risky because:
+
+- they can break backend compatibility
+- they can break startup assumptions
+- they can invalidate session continuity
+- they can create regressions difficult to isolate
+
+That is why bootstrap focuses first on technical stabilization, not flow redesign.
+
+---
+
+## Current Phase Impact on Flows
+
+Phase 0.1 does **not** redesign runtime flows.
 
 It only affects:
 
@@ -363,3 +359,108 @@ The system must remain:
 - backend-compatible
 
 Only after Phase 0.1 is fully stabilized should new domain flows be introduced.
+
+---
+
+## Phase 0.2.1 Flow Extension — Domain Skeleton & Navigation Entry
+
+Phase 0.2.1 preserves all runtime-controlled core flows from Phase 0.1, but changes the first visible application destination after startup/login continuity is complete.
+
+### New visible post-login flow
+
+Before:
+
+    App startup
+        → runtime ready
+        → inherited customer dashboard
+
+After Phase 0.2.1:
+
+    App startup
+        → runtime ready
+        → PlantelExteriorHomeScreen
+
+This is the most important flow change of the phase.
+
+### New main surface navigation flow
+
+Once inside the new home surface, the user can navigate through the drawer.
+
+Flow:
+
+    User opens drawer
+        → selects section
+        → plantelExteriorNavigationProvider updates current section
+        → PlantelExteriorHomeScreen rebuilds active body
+        → selected section becomes visible
+
+### Sections currently available
+
+The new flow exposes these product sections:
+
+- Home
+- Cajas PON / ONT
+- Botellas de Empalme
+
+### Home section flow
+
+    Drawer
+        → Home
+        → PlantelExteriorHomeView rendered
+
+Purpose:
+
+- establish visible product identity
+- communicate that the app is now an outside-plant field product
+- serve as initial landing surface for upcoming domain growth
+
+### Cajas PON / ONT section flow
+
+    Drawer
+        → Cajas PON / ONT
+        → CajasPonOntScreen rendered
+
+Current state:
+
+- real screen
+- skeleton behavior
+- no CRUD yet
+
+### Botellas de Empalme section flow
+
+    Drawer
+        → Botellas de Empalme
+        → BotellasEmpalmeScreen rendered
+
+Current state:
+
+- real screen
+- skeleton behavior
+- no CRUD yet
+
+### Logout continuity flow
+
+The new drawer also exposes logout without changing the original logout ownership model.
+
+    Drawer
+        → Cerrar sesión
+        → ApplicationCoordinator.performLogoutReset(ref: ref)
+
+This preserves the inherited session reset flow.
+
+### What Phase 0.2.1 does not change in flows
+
+Phase 0.2.1 does not change:
+
+- startup ownership
+- configuration loading
+- backend transport sequence
+- login continuity
+- session restoration
+- backend request/response semantics
+
+Only the visible destination and local domain navigation entry change.
+
+### Flow significance
+
+This phase is the first transition where the repository stops flowing visibly into a customer-product dashboard and starts flowing into a field-domain entry surface.

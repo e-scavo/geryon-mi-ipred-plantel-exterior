@@ -6,7 +6,7 @@ The architecture described here corresponds to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.1 — Controlled Clone & Technical Identity Baseline
+- Phase 0.2.1 — Domain Skeleton & Navigation Entry
 
 At this stage, the architecture is **inherited from Mi IP·RED**, with identity normalization applied, but without structural redesign.
 
@@ -118,279 +118,200 @@ Includes:
 Riverpod is used as:
 
 - dependency injection mechanism
-- state propagation system
-- lifecycle boundary between UI and runtime
+- runtime state bridge to UI
+- controlled state exposure layer
 
-At this stage, providers must remain stable and unchanged.
+At this stage, Riverpod usage remains inherited and stable.
 
 ---
 
 ## Transport Layer
 
-### WebSocket Client
+Backend communication relies on:
 
-Location:
+    WebSocket
 
-    lib/core/transport/
-    lib/models/GeryonSocket/
+Expected responsibilities:
 
-Responsibilities:
+- connection bootstrap
+- request transport
+- response delivery
+- reconnection handling
+- runtime coordination with ServiceProvider
 
-- establish connection with backend
-- send and receive messages
-- maintain persistent channel
-- handle reconnection scenarios
+This layer is considered **runtime-critical**.
 
-Characteristics:
-
-- backend communication is stateful
-- request/response model is abstracted through transport
-- tightly integrated with ServiceProvider
-
----
-
-## Backend Contract Layer
-
-The application uses a contract based on:
-
-- Table
-- ActionRequest
-- Generic models
-
-Locations:
-
-    lib/models/tbl_*/
-    lib/models/GenericDataModel/
-    lib/models/Common*/*
-
-Characteristics:
-
-- no DTO duplication
-- direct usage of backend-aligned models
-- strongly tied to GERYON backend behavior
-
-This contract must not be replaced or abstracted during bootstrap.
+No transport abstraction replacement is introduced during the bootstrap stage.
 
 ---
 
 ## Session Layer
 
-Location:
+The application includes session continuity mechanisms responsible for:
 
-    lib/core/session/
-    lib/models/SessionStorage/
+- reading stored session data
+- restoring runtime session state
+- supporting startup continuity
+- preserving authenticated flows across restarts
 
-Responsibilities:
-
-- store authentication data
-- restore session on startup
-- maintain login continuity
-
-Supports:
-
-- Web storage
-- IO storage (Android/Desktop)
-
-This layer ensures that login state survives app restarts.
+This layer must remain stable during Stage 0.
 
 ---
 
 ## Configuration Layer
 
-Location:
+The configuration layer is responsible for:
 
-    lib/core/config/
-    lib/models/ServiceProviderConfig/
+- loading runtime environment values
+- adapting to target platform
+- exposing backend-related configuration
+- ensuring startup prerequisites are satisfied
 
-Responsibilities:
-
-- load runtime configuration
-- adapt behavior between Web and IO
-- provide configuration to runtime layer
-
-Characteristics:
-
-- uses conditional imports
-- must remain compatible across platforms
+This layer is required before backend connectivity becomes valid.
 
 ---
 
-## File Abstraction Layer
+## Utility and Shared Layers
 
-Location:
+The inherited repository includes a mature set of shared components such as:
 
-    lib/core/files/
+- utility helpers
+- cross-platform abstractions
+- file helpers
+- model serializers
+- common widgets
 
-Responsibilities:
-
-- save files (downloads, exports)
-- abstract differences between Web and IO
-
-Used by:
-
-- features requiring file output
-- backend responses that generate files
+These layers are intentionally preserved because they support runtime continuity and avoid unnecessary duplication during bootstrap.
 
 ---
 
-## Utility Layer
+## UI Layer (Current Stage)
 
-Location:
+At the current stage, the UI layer is still partially inherited from the original product.
 
-    lib/core/utils/
+This means:
 
-Responsibilities:
+- some screens may still reflect the source product
+- final outside-plant UX is not fully implemented yet
+- Stage 0 focuses first on technical baseline, not complete domain surface
 
-- shared helpers
-- formatting
-- generic logic reused across layers
-
-This layer must remain generic and not domain-specific.
+This is an expected transitional state.
 
 ---
 
-## UI Layer
+## Domain Layer Status
 
-Locations:
+The new target domain is:
 
-    lib/pages/
-    lib/shared/
-    lib/features/
+- passive FTTH outside-plant management
 
-Responsibilities:
+Initial confirmed entities:
 
-- render UI
-- consume runtime state via providers
-- trigger actions through ServiceProvider
+- Caja PON / ONT
+- Botella de Empalme
 
-Current status:
+However, in Phase 0.1:
 
-- still contains inherited UI from original product
-- not yet aligned with plantel exterior domain
+- these entities are documented
+- but not yet implemented as full domain modules
 
-This is expected during bootstrap.
+So the domain exists at the product-definition level, not yet as a full application layer.
 
 ---
 
-## Data Flow Overview
+## Persistence Strategy
 
-### Startup Flow
+The long-term repository direction requires **real local persistence**, not lightweight placeholder persistence.
 
-    main.dart
-        → ProviderScope
-        → MyApp
-        → MyStartingPage
-            → ServiceProvider initialization
-                → config load
-                → session restore
-                → backend connect
-                → login validation
-                → ready state
+However, at the current stage:
+
+- full local DB integration is not yet implemented
+- persistence design remains deferred
+- architecture still reflects inherited storage/session mechanisms
+
+This is intentional.
 
 ---
 
-### Runtime Flow
+## Map Strategy
 
-    UI
-      ↔ ServiceProvider
-          ↔ WebSocket Transport
-              ↔ Backend
+The confirmed map technology for future phases is:
 
----
+    flutter_map
 
-### Session Flow
-
-    App start
-        → load session
-        → validate token
-        → continue login or request login
+But map integration is not part of the current architectural implementation yet.
 
 ---
 
-## Platform Strategy
+## Navigation Status
 
-The application supports:
+A scalable navigation baseline is required in future phases, but not yet fully implemented in Phase 0.1.
+
+At this stage:
+
+- existing inherited navigation still exists
+- future navigation must evolve toward outside-plant operational surfaces
+- no large navigation refactor is performed during controlled clone
+
+---
+
+## Backend Contract Strategy
+
+The system must reuse the **real existing backend contract**, rather than introducing speculative DTO redesign.
+
+This means:
+
+- existing models/tables remain authoritative where applicable
+- future domain work must adapt carefully to real backend semantics
+- architectural drift between frontend and backend is forbidden
+
+---
+
+## Platform Scope
+
+Current supported platforms:
 
 - Web
 - Android
 
-Using:
+Deferred platform:
 
-- conditional imports
-- shared abstractions for storage and files
+- iOS
 
-This strategy must remain intact during bootstrap.
-
----
-
-## Persistence Strategy (Current vs Future)
-
-Current state:
-
-- session persistence implemented
-- lightweight storage in place
-
-Future direction (already decided):
-
-- introduce real local database
-- support offline states:
-  - pending
-  - synchronized
-  - error
-
-Important:
-
-This is NOT implemented in Phase 0.1.
+Architecture must remain compatible with the supported platforms during all Stage 0 phases.
 
 ---
 
-## Navigation Strategy
+## Build/Release Residue Status
 
-Current state:
+Phase 0.1 removes publication/release residue from the source product, such as:
 
-- inherited navigation from original app
+- distribution artifacts
+- submission bundles
+- signing configuration residue
+- inherited publication identity
 
-Future requirement:
-
-- scalable navigation (drawer or equivalent)
-
-Important:
-
-Navigation redesign is NOT part of Phase 0.1.
+This is considered repository hygiene, not an architectural redesign.
 
 ---
 
-## Map Integration
+## Why the architecture is intentionally conservative
 
-Future decision:
+A mature inherited codebase always creates tension between:
 
-- use flutter_map
+- preserving what already works
+- redesigning for future purity
 
-Current state:
+At this stage, the repository explicitly chooses preservation because:
 
-- not implemented
-
----
-
-## Offline Strategy
-
-Future decision:
-
-- simple but real offline system
-
-States:
-
-- pending
-- synchronized
-- error
-
-Current state:
-
-- not implemented
+- runtime stability is more valuable than aesthetic cleanup
+- backend continuity is critical
+- field-domain functionality should be introduced on top of a stable baseline
+- premature architectural fragmentation could break proven flows
 
 ---
 
-## Architecture Constraints (Critical)
+## Architectural Constraints (Critical)
 
 During Phase 0.1:
 
@@ -462,3 +383,101 @@ While enabling:
 - controlled evolution toward a new domain
 
 This balance is critical to avoid regressions while transitioning from a customer-facing app to an operational field tool.
+
+---
+
+## Phase 0.2.1 Architectural Extension — Domain Skeleton & Navigation Entry
+
+Phase 0.2.1 does not redesign the inherited architecture, but it introduces the first **new functional feature layer** that becomes the visible main surface of the product after login.
+
+### New feature layer introduced
+
+A new presentation layer is introduced under:
+
+    lib/features/plantel_exterior/
+
+This layer is intentionally narrow and focused on:
+
+- product-specific entry surface
+- local feature navigation
+- early domain visibility
+
+### Internal structure
+
+    lib/features/plantel_exterior/
+      presentation/
+        providers/
+          plantel_navigation_provider.dart
+        widgets/
+          plantel_exterior_drawer.dart
+        screens/
+          plantel_exterior_home_screen.dart
+          plantel_exterior_home_view.dart
+          cajas_pon_ont_screen.dart
+          botellas_empalme_screen.dart
+
+### Architectural role of the new layer
+
+This feature layer is responsible for:
+
+- replacing the inherited customer dashboard as the visible post-login home
+- exposing a new field-domain home entry
+- giving both initial domain entities real navigable presence
+- doing so without changing runtime ownership or transport architecture
+
+### Navigation model introduced in Phase 0.2.1
+
+Navigation inside the new module is intentionally simple.
+
+It uses:
+
+- a small local provider
+- a section enum
+- a drawer as the main entry switch
+- screen-body replacement based on provider state
+
+This means Phase 0.2.1 introduces local presentation navigation, not a full routing redesign.
+
+### Post-login entrypoint change
+
+From an architectural perspective, the most important change is the visible destination selected once startup and session continuity are complete.
+
+Before:
+
+    runtime ready
+        → inherited DashboardPage(clientID: -1)
+
+After Phase 0.2.1:
+
+    runtime ready
+        → PlantelExteriorHomeScreen()
+
+This is the first architectural step where the repository begins to expose its real product direction.
+
+### What is intentionally preserved
+
+Phase 0.2.1 preserves:
+
+- ServiceProvider
+- notifierServiceProvider runtime integration
+- backend communication model
+- login/session continuity
+- startup bootstrap pattern
+- inherited modules outside the new visible entrypoint
+
+### Architectural constraints still valid
+
+Even after Phase 0.2.1, the following remain forbidden:
+
+- ServiceProvider redesign
+- transport replacement
+- premature local database insertion
+- sync engine introduction
+- deep global navigation rewrite
+- destructive removal of inherited modules
+
+### Architectural effect of Phase 0.2.1
+
+This phase introduces a **new top-level visible feature surface** without changing the structural runtime core.
+
+That makes it a low-risk but high-importance architectural transition.

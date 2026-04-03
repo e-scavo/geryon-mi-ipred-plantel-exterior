@@ -23,6 +23,7 @@ The goal of the current bootstrap stage is to establish a **controlled clone** w
 - Technical package name: `mi_ipred_plantel_exterior`
 - Android applicationId / namespace: `com.geryon.mi_ipred_plantel_exterior`
 - Product status: **Stage 0 / Technical Bootstrap**
+- Active subphase: **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
 - Current targets:
   - Web
   - Android
@@ -67,16 +68,30 @@ The repository is currently in:
 
 - **Stage 0 — Technical Bootstrap**
 - **Phase 0 — Technical Bootstrap**
-- **Phase 0.1 — Controlled Clone & Technical Identity Baseline**
+- **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
 
-The purpose of Phase 0.1 is to create a safe baseline for the new product by:
+The Stage 0 sequence is cumulative:
+
+- **Phase 0.1 — Controlled Clone & Technical Identity Baseline**
+- **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
+
+Phase 0.1 established the safe technical baseline for the new product by:
 
 - separating the repository identity from the original app
 - preserving the proven technical runtime
 - removing publication/release residue from the source product
 - preparing a clean starting point for upcoming outside-plant features
 
-Phase 0.1 does **not** introduce new domain CRUDs, offline sync flows, maps, camera integration, or navigation redesign yet.
+Phase 0.2.1 builds directly on that baseline and introduces:
+
+- a new post-login visible surface aligned with Mi IP·RED Plantel Exterior
+- a scalable base navigation using a drawer
+- a real domain home screen
+- first skeleton sections for:
+  - Caja PON / ONT
+  - Botella de Empalme
+
+Phase 0.2.1 still does **not** introduce full CRUDs, real offline sync flows, maps, camera integration, or a deep runtime redesign.
 
 ---
 
@@ -118,226 +133,218 @@ Even though the product identity changes, the technical baseline must remain sta
 The following decisions are already fixed for this repository baseline:
 
 1. **Android applicationId / namespace**
-   - `com.geryon.mi_ipred_plantel_exterior`
+
+       com.geryon.mi_ipred_plantel_exterior
 
 2. **Dart package name**
-   - `mi_ipred_plantel_exterior`
 
-3. **Local persistence**
-   - a real local database must be used from the start
-   - lightweight temporary persistence must not become the product core
+       mi_ipred_plantel_exterior
 
-4. **Backend contract**
-   - use the real backend contract (`Table` + `ActionRequest`)
-   - do not invent parallel DTOs if real models already exist
+3. **Backend contract reuse**
+   - use the existing real backend contract
+   - do not invent a new contract if the current one already supports the domain evolution
 
-5. **Navigation**
-   - the app must evolve with a scalable navigation structure from the beginning
-   - drawer or equivalent is an acceptable future direction
+4. **Base local strategy**
+   - local persistence must be real from day one of the real persistence phase
+   - but the full persistence layer is not part of the clone/bootstrap phase
 
-6. **Map technology**
+5. **Map technology**
    - use `flutter_map`
 
-7. **Offline policy**
-   - offline must be simple but real
-   - expected states include pending / synchronized / error
-   - complex sync orchestration is intentionally deferred
-
-These decisions are part of the product baseline and are not under discussion inside the bootstrap stage.
+6. **Navigation expectation**
+   - a scalable entry navigation is required in the upcoming domain phases
+   - but Phase 0.1 itself does not redesign navigation yet
 
 ---
 
-## Technology stack
+## What has already been normalized in the controlled clone
 
-Current technical baseline inherited from the source project:
+The technical baseline created in the repository already includes normalization in areas such as:
 
-- Flutter
-- Dart
-- Riverpod / flutter_riverpod
-- WebSocket
-- shared_preferences
-- conditional imports for Web and IO
-- local platform storage abstractions
-- file saving abstractions for Web and IO
+- repository/product naming
+- application identity
+- technical package identity
+- inherited release residue removal
+- signing/publication cleanup
+- baseline documentation rewrite
+- Web-facing public labels (minimum viable normalization)
 
-Additional domain-oriented technologies already decided for future stages:
-
-- real local database baseline
-- `flutter_map` for map surfaces
-
-Those future technologies belong to the roadmap, but Phase 0.1 itself is intentionally limited to technical bootstrap and identity normalization.
+This provides a stable ground for functional outside-plant evolution.
 
 ---
 
-## Observed architecture baseline
+## What is intentionally NOT done yet
 
-The current repository already contains a mature runtime structure that must be preserved as the technical foundation.
+At the current bootstrap stage, the repository intentionally does **not** implement:
 
-High-level boot flow:
+- domain CRUD for Caja PON / ONT
+- domain CRUD for Botella de Empalme
+- map flows
+- offline queue/sync engine
+- camera evidence flow
+- local DB implementation
+- production field workflows
+- structural ServiceProvider decomposition
+- architecture redesign for purity reasons alone
 
-    main.dart
-      -> ProviderScope
-      -> MyApp
-      -> MyStartingPage
-          -> notifierServiceProvider
-              -> ServiceProvider
-                  -> runtime initialization
-                  -> backend connectivity
-                  -> login/session continuity
-          -> current post-bootstrap page
-
-Main architectural blocks currently present in the repository:
-
-- `lib/main.dart`
-  - application bootstrap
-  - ProviderScope creation
-  - startup boundary control
-
-- `lib/common_vars.dart`
-  - global providers
-  - navigator key
-  - shared theme/runtime access points
-
-- `lib/core/config/*`
-  - config loading abstractions for Web and IO
-
-- `lib/core/session/*`
-  - session storage abstractions
-
-- `lib/core/transport/*`
-  - WebSocket transport abstractions
-
-- `lib/core/files/*`
-  - file saving abstractions
-
-- `lib/core/utils/*`
-  - shared utility layer
-
-- `lib/models/ServiceProvider/*`
-  - main runtime orchestrator
-  - startup coordination
-  - failure/recovery semantics
-  - auth continuation logic
-  - runtime diagnostics
-
-- `lib/models/ServiceProviderConfig/*`
-  - configuration flow and runtime configuration widgets/models
-
-- `lib/models/SessionStorage/*`
-  - compatibility layer for remembered session data
-
-- `lib/models/GeryonSocket/*`
-  - transport/client abstractions preserved from the source system
-
-- `lib/models/Common*/*`, `lib/models/GenericDataModel/*`, `lib/models/tbl_*/*`
-  - shared backend/domain models
-  - procedure and table-oriented data contracts
-
-- `lib/features/*`
-  - higher-level application contracts and feature organization
-
-- `lib/shared/*`
-  - reusable layouts, widgets, and shared UI helpers
-
-- `lib/pages/*`
-  - current visual entry points inherited from the source project
-
-This structure is the reason the project can be safely cloned without redesigning the entire runtime from day one.
+The reason is simple: the project first needs a **stable cloned baseline** before real functional divergence begins.
 
 ---
 
-## What Phase 0.1 changes
+## Technical baseline philosophy
 
-Phase 0.1 is intentionally narrow and controlled.
+This repository follows a **stability-first migration philosophy**.
 
-It includes:
+That means:
 
-- controlled project cloning
-- technical identity replacement
-- `pubspec.yaml` project-name normalization
-- Android package identity normalization
-- visible application label normalization
-- minimum Web branding review
-- cleanup of release/publication residue
-- cleanup of signing material that must not be reused
-- validation that the project still builds after the controlled clone
+- preserve what is already mature
+- change only what is required by the new product identity
+- delay heavy redesign until the new product direction is visible and validated
+- avoid “cleanup for aesthetics” if it endangers runtime continuity
 
-It does not include:
-
-- new product navigation
-- domain CRUDs
-- map integration
-- camera integration
-- offline implementation
-- runtime redesign
-- deep refactors of ServiceProvider
-- contract redesign against the backend
+This philosophy is especially important because the inherited codebase already contains working infrastructure that is expensive to re-create incorrectly.
 
 ---
 
-## Functional status at this stage
+## Runtime-critical layers preserved
 
-At this stage, the repository still inherits technical and UI elements from the original product baseline.
+The following layers are treated as critical and must remain stable until explicitly phased otherwise:
 
-That is expected.
+### 1. Application bootstrap
 
-The purpose of Phase 0.1 is **not** to finish the field product surface.  
-The purpose is to establish a safe technical starting point so subsequent phases can replace inherited customer-facing areas gradually and safely.
+Includes:
 
-Therefore, during bootstrap:
+- Flutter app initialization
+- ProviderScope startup
+- root application wiring
+- startup loading orchestration
 
-- some source-product screens may still exist in code
-- some source-product assets may still be present before cleanup
-- the original product flow may still be temporarily visible in the inherited runtime
-- the final outside-plant surface is not yet implemented
+### 2. ServiceProvider runtime
 
-This is acceptable as long as the repository identity and technical baseline are normalized correctly.
+Includes:
 
----
+- startup orchestration
+- backend connectivity
+- state transition handling
+- runtime ownership
 
-## Repository hygiene baseline
+### 3. WebSocket communication
 
-The source ZIP confirms that the inherited repository contains publication and signing residue that must not remain as part of the new product baseline.
+Includes:
 
-That residue includes, depending on the original source package contents:
+- initialization
+- handshake/connection management
+- request/response flow
+- backend continuity
 
-- `distribution/`
-- generated publication surfaces
-- submission bundles
-- release metadata from the source product
-- `android/key.properties`
-- local keystore references
-- keystore files under project storage
+### 4. Login and session continuity
 
-For the new product baseline:
+Includes:
 
-- signing material must be local-only and environment-specific
-- generated store/publication outputs must not define the cloned product identity
-- source-product publication surfaces must be removed from the inherited repository state
-
-This cleanup is part of the controlled-clone contract.
+- token/session persistence
+- startup session restore
+- authenticated continuity expectations
 
 ---
 
-## Running the project
+## Product direction after bootstrap
 
-### Web
+Once the technical baseline is stable, the repository is expected to evolve toward:
 
-    flutter pub get
-    flutter run -d chrome
+- new domain-first navigation
+- domain screens centered on outside-plant operations
+- real local persistence
+- offline states:
+  - pending
+  - synchronized
+  - error
+- map-assisted infrastructure interaction
+- progressive removal of inherited customer-facing surface
 
-### Android
+This means the bootstrap stage is not the final product, but the foundation for it.
 
-    flutter pub get
-    flutter run -d android
+---
 
-### Technical validation after Phase 0.1 identity normalization
+## Why this repository is intentionally conservative
 
-    flutter clean
-    flutter pub get
-    flutter analyze
-    flutter run -d chrome
-    flutter build apk
+There is a strong temptation in inherited-code projects to rewrite everything immediately.
+
+This repository deliberately avoids that because:
+
+- the inherited runtime is already functional
+- the backend integration is already proven
+- early rewrites often create regressions with no real product value
+- the new product still needs a reliable starting point before domain growth
+
+So the repository prefers:
+
+- controlled mutation
+- explicit phase boundaries
+- cumulative documentation
+- validation after each change
+
+---
+
+## Source of truth rule
+
+For all future work:
+
+- the attached ZIP is the only source of truth
+- documentation must reflect the real ZIP state
+- previous chat assumptions must be discarded if the ZIP contradicts them
+- implementation and documentation must move together
+
+This rule is mandatory.
+
+---
+
+## Documentation contract
+
+This repository uses a strict documentation model.
+
+Every phase must:
+
+- be documented incrementally
+- preserve prior valid context
+- avoid placeholders
+- avoid partial/fragmented markdown
+- return full files for copy/paste
+
+Primary documentation files include:
+
+- `README.md`
+- `docs/index.md`
+- `docs/architecture.md`
+- `docs/flows.md`
+- `docs/decisions.md`
+- dedicated phase documents
+
+---
+
+## Build and validation expectations
+
+At this baseline stage, validation is expected to confirm:
+
+- project identity compiles correctly
+- runtime still boots
+- backend connectivity path remains intact
+- session/login path remains intact
+- Web compatibility remains intact
+- Android compatibility remains intact
+
+Suggested validation commands depend on the local environment, but typically include:
+
+```bash
+flutter pub get
+flutter analyze
+flutter run -d chrome
+```
+
+and, when available:
+
+```bash
+flutter run -d android
+```
 
 These commands validate that the controlled clone still preserves the inherited technical runtime after identity cleanup.
 
@@ -418,3 +425,60 @@ The repository must therefore do two things at the same time:
 Phase 0.1 exists to create exactly that baseline.
 
 It is intentionally conservative, technically focused, and stability-first so the project can evolve into a field operations product without losing the maturity already achieved by the inherited runtime.
+
+---
+
+## Phase 0.2.1 implementation update
+
+Phase 0.2.1 is the first phase that changes the **visible functional entrypoint** of the repository after login.
+
+### What changed in Phase 0.2.1
+
+The application no longer presents the inherited customer dashboard as the main post-login product surface.
+
+Instead, it now exposes a dedicated outside-plant entry surface with:
+
+- a product-specific home screen
+- drawer-based navigation
+- first domain sections for:
+  - **Caja PON / ONT**
+  - **Botella de Empalme**
+
+### What remains intentionally unchanged
+
+Phase 0.2.1 preserves:
+
+- ServiceProvider as runtime owner
+- bootstrap and startup orchestration
+- backend communication
+- login and session continuity
+- Web + Android compatibility
+- inherited modules that are not yet removed
+
+### Why this matters
+
+This phase is strategically important because it is the first point where the repository stops looking like the original customer product and starts behaving like a real field operations product, even though domain behavior is still in skeleton form.
+
+### Phase 0.2.1 affected files
+
+Implementation introduced or modified the following files:
+
+    lib/main.dart
+    lib/features/plantel_exterior/presentation/providers/plantel_navigation_provider.dart
+    lib/features/plantel_exterior/presentation/widgets/plantel_exterior_drawer.dart
+    lib/features/plantel_exterior/presentation/screens/plantel_exterior_home_screen.dart
+    lib/features/plantel_exterior/presentation/screens/plantel_exterior_home_view.dart
+    lib/features/plantel_exterior/presentation/screens/cajas_pon_ont_screen.dart
+    lib/features/plantel_exterior/presentation/screens/botellas_empalme_screen.dart
+
+### Current visible behavior after login
+
+Current expected behavior is:
+
+    Login OK / Session restored
+        → PlantelExteriorHomeScreen
+            → Home
+            → Cajas PON / ONT
+            → Botellas de Empalme
+
+This is now the correct visible baseline for future field-domain work.

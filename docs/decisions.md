@@ -12,7 +12,7 @@ The content is cumulative and aligned strictly with the real repository (ZIP as 
 
 - Stage: Stage 0 — Technical Bootstrap
 - Phase: Phase 0 — Technical Bootstrap
-- Subphase: Phase 0.1 — Controlled Clone & Technical Identity Baseline
+- Subphase: Phase 0.2.1 — Domain Skeleton & Navigation Entry
 
 ---
 
@@ -118,289 +118,254 @@ Rules:
 
 ### 7. Backend Contract
 
-The system uses the real backend contract:
-
-- Table
-- ActionRequest
-- GenericDataModel
+The repository must reuse the **real existing backend contract**.
 
 Rules:
 
-- do not introduce parallel DTOs
-- do not wrap or abstract existing contract unnecessarily
-- use models aligned with backend
+- do not invent a replacement contract during bootstrap
+- adapt future domain work to the real contract
+- preserve compatibility with the current backend
 
 ---
 
-## Persistence Decisions
+### 8. Runtime Refactor Policy
 
-### 8. Local Persistence Strategy
+During Stage 0:
 
-Decision:
+- no deep ServiceProvider refactor
+- no runtime decomposition for aesthetic reasons
+- no transport redesign
 
-- use a real local database from the start
+Allowed:
 
-Rules:
-
-- temporary lightweight persistence must not become core
-- future offline support depends on this
-
-Important:
-
-This is a forward decision and not fully implemented in Phase 0.1.
-
----
-
-### 9. Session Persistence
-
-Session handling must:
-
-- persist login state
-- support restore on startup
-- remain cross-platform (Web + IO)
-
-This is already implemented and must remain unchanged.
-
----
-
-## Navigation Decisions
-
-### 10. Navigation Strategy
-
-Decision:
-
-- navigation must be scalable from the beginning
-
-Expected direction:
-
-- drawer-based or equivalent
-
-Important:
-
-- no redesign during Phase 0.1
-- current navigation remains inherited
-
----
-
-## Map Decision
-
-### 11. Map Technology
-
-Decision:
-
-    flutter_map
-
-Rules:
-
-- must be used for map features
-- avoid dependencies requiring API keys (e.g., Google Maps)
-
-Not implemented in Phase 0.1.
-
----
-
-## Offline Decisions
-
-### 12. Offline Strategy
-
-Decision:
-
-- offline must be simple but real
-
-States required:
-
-- pending
-- synchronized
-- error
-
-Rules:
-
-- no complex sync engine initially
-- must integrate with real local database
-
-Not implemented in Phase 0.1.
+- minimal safe changes only when required by the active phase
 
 ---
 
 ## Domain Decisions
 
-### 13. Core Entities
+### 9. Product Domain
 
-The system must consider from the beginning:
+The target domain is:
+
+- passive FTTH outside-plant management
+
+This is the authoritative product direction.
+
+---
+
+### 10. Initial Domain Entities
+
+The domain must explicitly include from the beginning:
 
 1. Caja PON / ONT
 2. Botella de Empalme
 
-Rules:
+Rule:
 
-- do not design system for a single entity
-- domain must support both from early stages
-
----
-
-## Bootstrap Constraints
-
-### 14. No Runtime Redesign
-
-During Stage 0:
-
-- do not redesign ServiceProvider
-- do not refactor runtime flow
-- do not introduce new architecture layers
+- the system must not be designed as if only one entity exists
 
 ---
 
-### 15. No Backend Disruption
+### 11. CRUD Timing
 
-Must not break:
+CRUD for domain entities is **not** part of the controlled clone phase.
 
-- WebSocket connection
-- login flow
-- session continuity
-- request/response contract
+Rule:
 
----
-
-### 16. Minimal Change Policy
-
-Changes must be:
-
-- controlled
-- minimal
-- reversible if needed
-
-Avoid:
-
-- large refactors
-- structural mutations
+- defer CRUD until after the technical baseline is stable
 
 ---
 
-## Repository Hygiene Decisions
+### 12. Offline Strategy
 
-### 17. Release Artifact Cleanup
+Offline support is required in the product roadmap, but not in Phase 0.1.
 
-The following must NOT remain in the repository baseline:
+Expected future simplified states:
 
-- distribution/
-- dist/
-- submission bundles
-- release metadata from original app
+- pending
+- synchronized
+- error
 
 ---
 
-### 18. Signing Material
+### 13. Persistence Strategy
 
-The following must be removed or not reused:
+Real local persistence is required for the real persistence phase.
 
-- android/key.properties
-- keystore files
-- upload keys from original product
+Rule:
 
-Rules:
+- do not adopt lightweight placeholder persistence as the product core
 
-- signing must be environment-specific
-- not inherited from source project
+However:
+
+- full persistence implementation is deferred beyond Phase 0.1
+
+---
+
+### 14. Map Strategy
+
+Confirmed map technology:
+
+    flutter_map
+
+Rule:
+
+- future map features must be built on flutter_map
+- do not introduce an alternative mapping stack
+
+---
+
+## Navigation Decisions
+
+### 15. Navigation Evolution
+
+The application will need a scalable navigation baseline.
+
+Rule:
+
+- this is acknowledged during bootstrap
+- but Phase 0.1 does not perform a navigation redesign yet
 
 ---
 
 ## Platform Decisions
 
-### 19. Supported Platforms
+### 16. Supported Platforms
 
-Current:
+Current supported platforms:
 
 - Web
 - Android
 
-Future:
+Deferred:
 
-- iOS (not part of bootstrap)
+- iOS
+
+Rule:
+
+- all bootstrap work must preserve Web + Android compatibility
 
 ---
 
-### 20. Cross-Platform Strategy
+## Repository Hygiene Decisions
 
-Use:
+### 17. Publication Residue Removal
 
-- conditional imports
-- shared abstractions
+Inherited publication and release artifacts must be removed from the new repository baseline.
 
-Rules:
+Includes:
 
-- maintain compatibility across platforms
-- do not introduce platform divergence
+- distribution artifacts
+- submission bundles
+- signing residue
+- product-specific publication identity
+
+---
+
+### 18. Signing Isolation
+
+Signing-related inherited artifacts from the original repository must not remain as active operational residue.
+
+Reason:
+
+- avoid accidental release coupling between products
 
 ---
 
 ## Documentation Decisions
 
-### 21. Source of Truth
+### 19. ZIP as Source of Truth
 
-The only valid source:
-
-    the real ZIP repository
+The attached ZIP is the only authoritative source of truth.
 
 Rules:
 
-- documentation must match code
-- assumptions are not allowed
-- contradictions must be resolved in favor of code
+- if chat memory conflicts with ZIP → ZIP wins
+- docs must reflect ZIP
+- implementations must be aligned with ZIP
 
 ---
 
-### 22. Documentation Model
+### 20. Documentation Style
 
 Documentation must be:
 
-- incremental
 - cumulative
-- complete (no partial files)
+- incremental
+- full-file based
 - copy/paste safe
 
-Must always update:
+Forbidden:
 
-- README.md
-- docs/index.md
-- docs/architecture.md
-- docs/flows.md
-- docs/decisions.md
-- phase-specific document
+- placeholders
+- destructive summarization
+- fragmented markdown delivery
 
 ---
 
-## Phase 0.1 Specific Decisions
+### 21. Phase Documentation Requirement
 
-### 23. Controlled Clone Strategy
+Every phase/subphase must have a dedicated full document.
 
-Phase 0.1 must:
+Rule:
 
-- create a new technical identity
-- preserve runtime
-- remove release artifacts
-- validate build stability
+- no phase can be considered complete without documentation
 
 ---
 
-### 24. No Functional Expansion
+## Safety/Change Decisions
 
-Phase 0.1 must NOT include:
+### 22. Stability Priority
 
-- CRUDs
-- map features
-- offline system
-- navigation redesign
-- domain UI implementation
+Bootstrap phases prioritize:
+
+1. runtime stability
+2. backend compatibility
+3. identity separation
+4. safe future extensibility
 
 ---
 
-### 25. Identity Separation
+### 23. Minimal Change Principle
 
-The repository must:
+Changes should be:
 
-- clearly separate from original product identity
-- avoid confusion in package names
-- avoid reuse of publication assets
+- controlled
+- minimal
+- justified by current phase scope
+
+Forbidden:
+
+- unnecessary redesign
+- speculative cleanup
+- broad refactors without phase need
+
+---
+
+### 24. Transitional Tolerance
+
+During bootstrap, the repository may temporarily contain:
+
+- inherited UI
+- inherited flows
+- non-final product surface
+
+This is acceptable if:
+
+- runtime remains stable
+- documentation is explicit
+- the final product direction remains clear
+
+---
+
+### 25. Product Surface Transition
+
+Inherited customer-facing screens may remain temporarily while the controlled clone baseline is being established.
+
+Rule:
+
+- do not remove them aggressively before the new product surface is ready
 
 ---
 
@@ -482,3 +447,114 @@ During Phase 0.1, the focus is:
 - repository cleanup
 
 All future phases must build on top of these decisions without breaking them.
+
+---
+
+## Phase 0.2.1 Decisions
+
+### 30. Visible Post-Login Surface Replacement
+
+Decision:
+
+The inherited customer dashboard must stop being the primary visible post-login surface.
+
+Reason:
+
+The new repository already has its own product identity and domain. Keeping the customer dashboard as the visible entrypoint would preserve a false product surface.
+
+Impact:
+
+The application now enters through a Plantel Exterior home surface.
+
+---
+
+### 31. Drawer-Based Main Navigation
+
+Decision:
+
+The first navigation baseline for the new product surface must use a drawer or equivalent simple scalable pattern.
+
+Reason:
+
+The project needs an extensible entry navigation, but the phase must remain low risk and avoid premature complexity.
+
+Impact:
+
+A drawer-based navigation baseline becomes the first visible domain shell.
+
+---
+
+### 32. Both Core Domain Entities Must Exist From the First Visible Domain Phase
+
+Decision:
+
+Phase 0.2.1 must expose both initial domain entities:
+
+- Caja PON / ONT
+- Botella de Empalme
+
+Reason:
+
+The product must not be shaped around a single initial entity. Both must be acknowledged from the beginning.
+
+Impact:
+
+Both sections now exist as real navigable screens, even though still in skeleton form.
+
+---
+
+### 33. Skeleton Screens Are Valid at This Stage
+
+Decision:
+
+At this stage, the domain sections may be implemented as functional skeletons instead of full CRUD screens.
+
+Reason:
+
+The objective of the phase is to establish visible product direction and navigation, not complete operational logic.
+
+Impact:
+
+The project gains a real domain shell without introducing premature complexity.
+
+---
+
+### 34. Legacy Modules May Remain Internally While the Visible Surface Changes
+
+Decision:
+
+Inherited modules do not need to be removed yet, as long as they stop being the visible primary surface.
+
+Reason:
+
+Abrupt deletion increases risk and can remove useful technical references.
+
+Impact:
+
+Transition remains controlled and reversible while future phases progressively replace inherited surfaces.
+
+---
+
+### 35. Runtime Ownership Remains Untouched During Visible Surface Transition
+
+Decision:
+
+The visible transition introduced in Phase 0.2.1 must not alter ServiceProvider ownership or backend flow control.
+
+Reason:
+
+The new visible shell is not a justification for runtime redesign.
+
+Impact:
+
+The project preserves its most critical stable subsystem while evolving product identity.
+
+---
+
+## Updated Summary After Phase 0.2.1
+
+Project decisions now establish that:
+
+- Phase 0.1 created the technical clone baseline
+- Phase 0.2.1 created the first visible domain shell
+- future phases will build on top of that shell instead of returning to the inherited customer dashboard

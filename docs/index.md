@@ -10,7 +10,7 @@ The documentation set is **cumulative, incremental, and strictly aligned with th
 
 - Stage: **Stage 0 — Technical Bootstrap**
 - Phase: **Phase 0 — Technical Bootstrap**
-- Active subphase: **Phase 0.1 — Controlled Clone & Technical Identity Baseline**
+- Active subphase: **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
 
 ---
 
@@ -80,6 +80,7 @@ Each phase must have its own dedicated document.
 Current:
 
     docs/phase0_1_controlled_clone_technical_identity_baseline.md
+    docs/phase0_2_1_domain_skeleton_navigation_entry.md
 
 Purpose:
 
@@ -119,32 +120,125 @@ Each subphase must:
 
 ---
 
-## Source of Truth Policy
+## Current Documentation Coverage
 
-The only valid source of truth for:
+The current documentation covers:
 
-- code
-- architecture
-- flows
-- models
-- runtime behavior
+1. repository/product identity separation
+2. preservation of technical runtime baseline
+3. architecture inherited from Mi IP·RED
+4. runtime-critical flows
+5. fixed decisions for Stage 0
+6. Phase 0.1 controlled clone baseline
 
-is the **real repository (ZIP)**.
-
-Implications:
-
-- documentation must be validated against the ZIP
-- assumptions are not allowed if they contradict the code
-- inferred behavior must be clearly justified
-- historical context must not override real implementation
+As the project evolves, documentation must progressively shift from inherited baseline description to new domain-specific repository truth.
 
 ---
 
-## Relationship with Source Product (Mi IP·RED)
+## Repository Source of Truth Rule
 
-This repository originates from Mi IP·RED, but:
+All documentation must follow one non-negotiable rule:
 
-- it is a **new product**
+> The attached ZIP is the only source of truth.
+
+Implications:
+
+- if a previous assumption contradicts the ZIP, the ZIP wins
+- documentation must describe real files, real structure, real behavior
+- documentation must not invent architecture or flows that do not exist yet
+
+---
+
+## Current Documentation Maturity
+
+At the current repository stage, the documentation is strongest in:
+
+- technical baseline definition
+- runtime preservation rules
+- architectural constraints
+- product boundary definition
+
+It is intentionally less mature in:
+
+- final domain workflows
+- offline model
+- map interactions
+- local persistence implementation
+
+Those areas will be expanded in later phases.
+
+---
+
+## Why cumulative documentation matters
+
+This repository is not a greenfield project; it is a controlled derivative of an already mature application.
+
+Therefore, documentation must be cumulative because:
+
+- inherited technical behavior still exists
+- new product meaning is introduced progressively
+- abrupt documentation rewrites could hide important constraints
+- technical and product truth must stay aligned across phases
+
+---
+
+## Documentation files and expected role
+
+### `README.md`
+
+High-level repository truth:
+- what this product is
+- what it is not
+- current stage
+- baseline rules
+
+### `docs/architecture.md`
+
+Deep technical structure:
+- runtime ownership
+- application layers
+- preserved critical components
+- architectural constraints
+
+### `docs/flows.md`
+
+Behavioral/runtime flows:
+- startup
+- config loading
+- session restore
+- backend connection
+- request/response
+- UI interaction
+
+### `docs/decisions.md`
+
+Binding project decisions:
+- identity
+- architecture
+- transport
+- persistence direction
+- navigation expectations
+- domain constraints
+
+### `docs/phase0_1_controlled_clone_technical_identity_baseline.md`
+
+Phase-specific explanation of the controlled clone baseline.
+
+---
+
+## Interpretation rule for inherited repository elements
+
+Because the repository originates from Mi IP·RED:
+
+- some code may still reflect the original product surface
+- some architecture names may still belong to inherited implementation
+- some UI may still be transitional during bootstrap phases
+
+This does **not** mean the repository remains the original product.
+
+It means:
+
+- it reuses a mature technical base
 - it has a **different domain**
 - it has a **different identity**
 
@@ -225,3 +319,35 @@ It ensures that:
 - implementation remains aligned with reality
 
 All contributors must follow this structure strictly to maintain consistency across the project lifecycle.
+
+---
+
+## Phase 0.2.1 documentation update
+
+Phase 0.2.1 adds the first documentation layer that reflects a **functional visible decoupling** from the inherited customer product surface.
+
+This means the documentation set must now explicitly cover:
+
+- the new post-login visible surface
+- the new drawer-based navigation entry
+- the first two domain sections:
+  - Caja PON / ONT
+  - Botella de Empalme
+- the fact that runtime and backend remain unchanged while the visible entrypoint changes
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase0_2_1_domain_skeleton_navigation_entry.md
+
+### Documentation continuity rule
+
+Phase 0.2.1 does not invalidate Phase 0.1.
+
+Instead:
+
+- Phase 0.1 remains the technical baseline phase
+- Phase 0.2.1 becomes the first visible domain-entry phase
+
+Both documents must therefore coexist as cumulative project history.
