@@ -120,6 +120,9 @@ linux/.flutter-plugins-dependencies
 # /android/app/release
 keys
 android/key.properties
+android/app/.cxx/
+android/app/.cxx/
+android/.cxx/
 
 # FVM Version Cache
 .fvm/
