@@ -3,9 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/providers/outside_plant_providers.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/botellas/botella_form_screen.dart';
 
 class BotellasEmpalmeScreen extends ConsumerWidget {
   const BotellasEmpalmeScreen({super.key});
+
+  Future<void> _openCreateForm(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const BotellaFormScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,16 +29,27 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Botellas de Empalme',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Botellas de Empalme',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  FilledButton.icon(
+                    onPressed: () => _openCreateForm(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Nueva botella'),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.2.3 conecta esta pantalla a la base local real del módulo. '
-                'La UI ya no depende de datos simulados dentro del widget.',
+                'Phase 0.3.1 incorpora alta real de botellas de empalme con formulario y persistencia directa sobre el repositorio local.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -39,7 +59,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                     return const _EmptyState(
                       title: 'Sin botellas registradas',
                       message:
-                          'La base local está inicializada, pero no contiene botellas de empalme todavía.',
+                          'Todavía no hay botellas de empalme cargadas en la base local.',
                     );
                   }
 
@@ -221,7 +241,7 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.error_outline, size: 42),
             const SizedBox(height: 12),
             const Text(
-              'No se pudo cargar la persistencia local de botellas de empalme',
+              'No se pudieron cargar las botellas de empalme',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),

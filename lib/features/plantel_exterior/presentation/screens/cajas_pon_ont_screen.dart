@@ -3,9 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/providers/outside_plant_providers.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/cajas/caja_form_screen.dart';
 
 class CajasPonOntScreen extends ConsumerWidget {
   const CajasPonOntScreen({super.key});
+
+  Future<void> _openCreateForm(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const CajaFormScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,16 +29,27 @@ class CajasPonOntScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Cajas PON / ONT',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Cajas PON / ONT',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  FilledButton.icon(
+                    onPressed: () => _openCreateForm(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Nueva caja'),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.2.3 reemplaza los ejemplos hardcodeados por lectura real desde persistencia local. '
-                'La pantalla ya consume el repositorio del dominio respaldado por Drift.',
+                'Phase 0.3.1 incorpora alta real de cajas PON / ONT con formulario y persistencia directa sobre el repositorio local.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -39,7 +59,7 @@ class CajasPonOntScreen extends ConsumerWidget {
                     return const _EmptyState(
                       title: 'Sin cajas registradas',
                       message:
-                          'La base local está inicializada, pero no contiene cajas PON / ONT todavía.',
+                          'Todavía no hay cajas PON / ONT cargadas en la base local.',
                     );
                   }
 
@@ -221,7 +241,7 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.error_outline, size: 42),
             const SizedBox(height: 12),
             const Text(
-              'No se pudo cargar la persistencia local de cajas PON / ONT',
+              'No se pudieron cargar las cajas PON / ONT',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
