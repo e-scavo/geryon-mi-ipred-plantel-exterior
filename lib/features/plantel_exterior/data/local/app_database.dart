@@ -1,13 +1,7 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:flutter/foundation.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-
-import 'tables/cajas_pon_ont_table.dart';
-import 'tables/botellas_empalme_table.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/local/database/construct_db.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/local/tables/botellas_empalme_table.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/local/tables/cajas_pon_ont_table.dart';
 
 part 'app_database.g.dart';
 
@@ -18,23 +12,10 @@ part 'app_database.g.dart';
   ],
 )
 class PlantelExteriorDatabase extends _$PlantelExteriorDatabase {
-  PlantelExteriorDatabase() : super(_openConnection());
+  PlantelExteriorDatabase() : super(openPlantelExteriorConnection());
+
+  PlantelExteriorDatabase.withExecutor(super.e);
 
   @override
   int get schemaVersion => 1;
-}
-
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    if (kIsWeb) {
-      throw UnsupportedError(
-        'Drift NativeDatabase no soportado en Web en esta fase (0.2.3)',
-      );
-    }
-
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'plantel_exterior.db'));
-
-    return NativeDatabase(file);
-  });
 }
