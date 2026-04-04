@@ -10,7 +10,7 @@ The documentation set is **cumulative, incremental, and strictly aligned with th
 
 - Stage: **Stage 0 — Technical Bootstrap**
 - Phase: **Phase 0 — Technical Bootstrap**
-- Active subphase: **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
+- Active subphase: **Phase 0.2.3 — Local Persistence Baseline**
 
 ---
 
@@ -351,3 +351,69 @@ Instead:
 - Phase 0.2.1 becomes the first visible domain-entry phase
 
 Both documents must therefore coexist as cumulative project history.
+
+---
+
+## Phase 0.2.2 documentation update
+
+Phase 0.2.2 extends the repository from a visible field-product shell into a domain-aware application.
+
+This means the documentation set explicitly incorporates:
+
+- first real domain entities
+- value objects
+- sync state enum
+- repository contract baseline
+- domain-aware presentation instead of placeholder-only rendering
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase0_2_2_domain_modeling_and_contracts_baseline.md
+
+### Documentation continuity rule
+
+Phase 0.2.2 does not invalidate the previous phases.
+
+Instead:
+
+- Phase 0.1 remains the technical baseline phase
+- Phase 0.2.1 remains the first visible domain-entry phase
+- Phase 0.2.2 becomes the first domain-structure phase
+
+All three documents must coexist as cumulative project history.
+
+---
+
+## Phase 0.2.3 documentation update
+
+Phase 0.2.3 adds the first real persistence layer to the repository.
+
+This means the documentation set must now explicitly cover:
+
+- Drift as the local persistence baseline
+- local table definitions for Caja PON / ONT and Botella de Empalme
+- a concrete repository implementation
+- Riverpod providers connected to persistence
+- persistence-backed rendering in the Plantel Exterior UI
+- the temporary platform limitation where web persistence remains deferred
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase0_2_3_local_persistence_baseline.md
+
+### Documentation continuity rule
+
+Phase 0.2.3 does not invalidate any earlier phase.
+
+Instead:
+
+- Phase 0.1 remains the technical controlled-clone baseline
+- Phase 0.2.1 remains the visible Plantel Exterior shell phase
+- Phase 0.2.2 remains the domain-model baseline
+- Phase 0.2.3 becomes the persistence baseline
+
+All of them must be read cumulatively as part of the same bootstrap sequence.

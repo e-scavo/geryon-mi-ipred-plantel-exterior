@@ -23,7 +23,7 @@ The goal of the current bootstrap stage is to establish a **controlled clone** w
 - Technical package name: `mi_ipred_plantel_exterior`
 - Android applicationId / namespace: `com.geryon.mi_ipred_plantel_exterior`
 - Product status: **Stage 0 / Technical Bootstrap**
-- Active subphase: **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
+- Active subphase: **Phase 0.2.3 — Local Persistence Baseline**
 - Current targets:
   - Web
   - Android
@@ -482,3 +482,112 @@ Current expected behavior is:
             → Botellas de Empalme
 
 This is now the correct visible baseline for future field-domain work.
+
+---
+
+## Phase 0.2.3 — Local Persistence Baseline
+
+Phase 0.2.3 introduces the first real persistence layer of Mi IP·RED Plantel Exterior.
+
+After Phase 0.2.1 established the visible product shell and Phase 0.2.2 introduced the first explicit domain model, this phase adds a concrete local data layer based on Drift so the application no longer depends on in-memory sample entities rendered directly by the widgets.
+
+### What changed in Phase 0.2.3
+
+The repository now contains a real persistence structure under `lib/features/plantel_exterior/data/`, including:
+
+- local Drift database definition
+- generated database companion/model layer
+- Drift table definitions for:
+  - Caja PON / ONT
+  - Botella de Empalme
+- entity/database mappers
+- first concrete repository implementation
+- Riverpod providers that connect UI to persistence
+
+### Persistence technology
+
+This phase adopts **Drift 2.31.0** as the local persistence baseline for the project, together with generated code through `build_runner`.
+
+The resulting persistence chain is:
+
+    UI
+        → Riverpod providers
+        → DriftOutsidePlantRepository
+        → PlantelExteriorDatabase
+        → local SQLite database
+
+### Current platform scope of persistence
+
+Phase 0.2.3 intentionally enables native local persistence first.
+
+Current persistence support status:
+
+- Android: supported
+- native desktop environments compatible with `NativeDatabase`: supported by the persistence design
+- Web: explicitly deferred to a later phase
+
+In the current implementation, web persistence is not yet enabled and the database opening path throws an explicit unsupported error on web.
+
+### Seed data strategy
+
+The first repository implementation guarantees that the initial UI always has valid local data to render by inserting baseline records only when the local tables are empty.
+
+Seeded records include:
+
+- one Caja PON / ONT
+- one Botella de Empalme
+
+This keeps the repository testable and makes the visual module useful before CRUD flows are introduced.
+
+### What remains intentionally unchanged
+
+Phase 0.2.3 preserves:
+
+- ServiceProvider as runtime owner
+- startup and bootstrap orchestration
+- backend communication
+- login and session continuity
+- the visible navigation shell introduced in Phase 0.2.1
+- the domain model introduced in Phase 0.2.2
+
+### Why this phase matters
+
+This phase is the first one where the product stops depending on sample entity instantiation inside presentation widgets and starts behaving like a persistence-backed application.
+
+That is strategically important because it creates the real foundation for:
+
+- CRUD flows
+- durable local state
+- offline-first behavior
+- future synchronization
+- repository expansion without UI rewrites
+
+### Phase 0.2.3 affected files
+
+Implementation introduced or modified the following key files:
+
+    pubspec.yaml
+    .gitignore
+    lib/features/plantel_exterior/data/local/app_database.dart
+    lib/features/plantel_exterior/data/local/app_database.g.dart
+    lib/features/plantel_exterior/data/local/tables/cajas_pon_ont_table.dart
+    lib/features/plantel_exterior/data/local/tables/botellas_empalme_table.dart
+    lib/features/plantel_exterior/data/mappers/caja_pon_ont_mapper.dart
+    lib/features/plantel_exterior/data/mappers/botella_empalme_mapper.dart
+    lib/features/plantel_exterior/data/repositories/drift_outside_plant_repository.dart
+    lib/features/plantel_exterior/application/providers/outside_plant_providers.dart
+    lib/features/plantel_exterior/presentation/screens/plantel_exterior_home_view.dart
+    lib/features/plantel_exterior/presentation/screens/cajas_pon_ont_screen.dart
+    lib/features/plantel_exterior/presentation/screens/botellas_empalme_screen.dart
+
+### Current visible behavior after local persistence
+
+Current expected behavior is:
+
+    Login OK / Session restored
+        → PlantelExteriorHomeScreen
+            → Home (summaries fed by providers)
+            → Cajas PON / ONT (loaded from local repository)
+            → Botellas de Empalme (loaded from local repository)
+
+This makes Phase 0.2.3 the first persistence-backed baseline for future outside-plant operations work.

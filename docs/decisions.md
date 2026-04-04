@@ -12,7 +12,7 @@ The content is cumulative and aligned strictly with the real repository (ZIP as 
 
 - Stage: Stage 0 — Technical Bootstrap
 - Phase: Phase 0 — Technical Bootstrap
-- Subphase: Phase 0.2.2 — Domain Modeling & Contracts Baseline
+- Subphase: Phase 0.2.3 — Local Persistence Baseline
 
 ---
 
@@ -682,5 +682,149 @@ Project decisions now establish a three-step bootstrap sequence:
 - Phase 0.1 → technical identity and controlled clone baseline
 - Phase 0.2.1 → visible Plantel Exterior shell and navigation entry
 - Phase 0.2.2 → first real domain entities, value objects and repository contract baseline
+
+Future phases must build on this sequence instead of bypassing it.
+
+
+---
+
+## Phase 0.2.3 Decisions
+
+### 43. Introduce a real persistence layer before CRUD UI
+
+Decision:
+
+The repository must gain a real local persistence layer before implementing full create/edit/delete flows.
+
+Reason:
+
+CRUD UI without durable local storage would create another temporary layer and force avoidable rework in later phases.
+
+Impact:
+
+Persistence now becomes part of the core Plantel Exterior feature baseline.
+
+---
+
+### 44. Use Drift as the local persistence baseline
+
+Decision:
+
+Phase 0.2.3 adopts Drift 2.31.0 as the persistence baseline for the Plantel Exterior module.
+
+Reason:
+
+Drift provides a typed local data layer with generated models and a clean mapping path between database records and domain entities while remaining compatible with the current SDK constraints of the project baseline.
+
+Impact:
+
+The repository now has a structured, code-generated local persistence layer suitable for future CRUD and offline work.
+
+---
+
+### 45. Keep the domain layer free from persistence concerns
+
+Decision:
+
+The domain layer must not import Drift, SQL-specific types or database classes.
+
+Reason:
+
+The domain introduced in Phase 0.2.2 must remain reusable and independent of the chosen persistence technology.
+
+Impact:
+
+Mappers now absorb the translation responsibility between local tables and domain entities.
+
+---
+
+### 46. Implement repository pattern before adding multiple data sources
+
+Decision:
+
+The first concrete persistence integration must still respect the repository boundary introduced in Phase 0.2.2.
+
+Reason:
+
+The repository contract is the correct seam for future local/backend or hybrid implementations. Bypassing it now would undermine the purpose of the previous phase.
+
+Impact:
+
+UI and providers consume `OutsidePlantRepositoryContract` semantics through a concrete Drift implementation.
+
+---
+
+### 47. Seed initial local data for baseline usability
+
+Decision:
+
+Phase 0.2.3 includes controlled initial seed data when local storage is empty.
+
+Reason:
+
+The feature needs deterministic visible data for validation and early testing even before CRUD forms exist.
+
+Impact:
+
+The module is persistence-backed and immediately testable after first run.
+
+---
+
+### 48. Add application-layer providers for persistence-backed reads
+
+Decision:
+
+Persistence-backed reads must be exposed to the presentation layer through Riverpod providers rather than direct widget/database coupling.
+
+Reason:
+
+This keeps the architecture layered and maintains the same discipline used for other state boundaries in the repository.
+
+Impact:
+
+The home screen, cajas screen and botellas screen now load through feature/application providers.
+
+---
+
+### 49. Defer web persistence support to a later phase
+
+Decision:
+
+Phase 0.2.3 does not enable web persistence.
+
+Reason:
+
+The web path adds platform-specific complexity that is orthogonal to the goal of introducing the first local persistence baseline.
+
+Impact:
+
+The current database opening path explicitly rejects web execution, and web support must be treated as a dedicated later phase.
+
+---
+
+### 50. Keep runtime untouched during persistence introduction
+
+Decision:
+
+Phase 0.2.3 must not alter ServiceProvider, startup orchestration, backend transport or session continuity.
+
+Reason:
+
+Persistence introduction remains a feature/data concern and must not expand into a runtime redesign.
+
+Impact:
+
+The new persistence baseline is introduced with minimal operational risk.
+
+---
+
+## Updated summary after Phase 0.2.3
+
+Project decisions now establish a four-step bootstrap sequence:
+
+- Phase 0.1 → technical identity and controlled clone baseline
+- Phase 0.2.1 → visible Plantel Exterior shell and navigation entry
+- Phase 0.2.2 → first real domain entities, value objects and repository contract baseline
+- Phase 0.2.3 → first concrete local persistence layer with Drift-backed repository reads
 
 Future phases must build on this sequence instead of bypassing it.

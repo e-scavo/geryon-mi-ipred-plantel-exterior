@@ -6,7 +6,7 @@ The flows described here correspond to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.2.2 — Domain Modeling & Contracts Baseline
+- Phase 0.2.3 — Local Persistence Baseline
 
 At this stage, flows are inherited from Mi IP·RED and must be preserved without functional redesign.
 
@@ -550,3 +550,120 @@ This phase introduces the first **domain-aware presentation flow** of the reposi
 
 The UI no longer renders only textual placeholders.  
 It now renders information derived from explicit domain objects, which is the necessary bridge toward CRUD, persistence and offline flows in later phases.
+
+
+---
+
+## Phase 0.2.3 Flow Extension — Local Persistence Baseline
+
+Phase 0.2.3 preserves all prior runtime-controlled flows, but it changes how Plantel Exterior screens obtain their data.
+
+### New persistence-backed feature flow
+
+Before Phase 0.2.3:
+
+    User enters Plantel Exterior section
+        → widget instantiates example entity in memory
+        → UI renders example data
+
+After Phase 0.2.3:
+
+    User enters Plantel Exterior section
+        → Riverpod provider resolves repository
+        → repository ensures seed data when needed
+        → repository reads Drift database
+        → database rows are mapped into domain entities
+        → UI renders persisted domain data
+
+### Database initialization flow
+
+    Provider creation
+        → PlantelExteriorDatabase instantiated
+        → Lazy database connection opened on first use
+        → local SQLite file resolved in application documents directory
+
+This flow introduces durable local state without changing startup/runtime ownership.
+
+### Seed flow
+
+The repository now includes a seed path to guarantee non-empty initial rendering:
+
+    Screen provider triggered
+        → repository.ensureSeedData()
+        → check if Caja table has rows
+        → if empty, insert initial Caja record
+        → insert initial Botella record
+        → proceed with regular read
+
+This seed path is idempotent for subsequent reads because it exits as soon as seed data already exists.
+
+### Cajas PON / ONT flow update
+
+    Drawer
+        → Cajas PON / ONT
+        → cajasPonOntListProvider
+        → DriftOutsidePlantRepository
+        → PlantelExteriorDatabase
+        → read persisted rows
+        → map rows to CajaPonOnt
+        → render cards in UI
+
+Rendered information now includes:
+
+- id
+- code
+- description
+- optional location
+- sync status
+- createdAt
+- updatedAt
+
+### Botellas de Empalme flow update
+
+    Drawer
+        → Botellas de Empalme
+        → botellasEmpalmeListProvider
+        → DriftOutsidePlantRepository
+        → PlantelExteriorDatabase
+        → read persisted rows
+        → map rows to BotellaEmpalme
+        → render cards in UI
+
+Rendered information now includes:
+
+- id
+- code
+- description
+- optional location
+- sync status
+- createdAt
+- updatedAt
+
+### Home flow update
+
+The home view no longer describes only architecture intent.
+It now summarizes persisted module information through providers.
+
+    Home section
+        → cajasPonOntListProvider
+        → botellasEmpalmeListProvider
+        → provider-backed counts
+        → InfoCard values updated
+
+### Persistence limitation of current flow
+
+Even after Phase 0.2.3, these flows are still:
+
+- local-only
+- not synchronized with backend domain data
+- not web-enabled
+- still lacking create/edit/delete UI workflows
+
+That is acceptable because the objective of the phase is to introduce durable local state, not full operational workflows.
+
+### Flow significance of Phase 0.2.3
+
+This phase introduces the first **persistence-backed presentation flow** of the repository.
+
+The Plantel Exterior UI no longer depends on placeholder strings or manually instantiated entities.
+It now depends on repository-mediated local storage, which is the necessary bridge toward CRUD, offline and synchronization work in later phases.

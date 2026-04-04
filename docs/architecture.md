@@ -6,7 +6,7 @@ The architecture described here corresponds to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.2.2 — Domain Modeling & Contracts Baseline
+- Phase 0.2.3 — Local Persistence Baseline
 
 At this stage, the architecture is **inherited from Mi IP·RED**, with identity normalization applied, but without structural redesign.
 
@@ -603,3 +603,141 @@ That makes it a foundational architectural milestone:
 
 - low risk for current runtime
 - high value for future product evolution
+
+
+---
+
+## Phase 0.2.3 Architectural Extension — Local Persistence Baseline
+
+Phase 0.2.3 does not change the runtime-centric architectural core of the repository, but it introduces the first concrete persistence layer for the Plantel Exterior module.
+
+### New data layer introduced
+
+A new data-oriented structure is introduced under:
+
+    lib/features/plantel_exterior/data/
+
+This layer contains:
+
+- local database configuration
+- table declarations
+- generated Drift database artifacts
+- domain/database mappers
+- repository implementation
+
+### Internal persistence structure
+
+    lib/features/plantel_exterior/data/
+      local/
+        app_database.dart
+        app_database.g.dart
+        tables/
+          cajas_pon_ont_table.dart
+          botellas_empalme_table.dart
+      mappers/
+        caja_pon_ont_mapper.dart
+        botella_empalme_mapper.dart
+      repositories/
+        drift_outside_plant_repository.dart
+
+### Architectural role of the new layer
+
+This layer is responsible for:
+
+- persisting Plantel Exterior entities locally
+- isolating Drift from the domain layer
+- translating domain entities to database structures and back
+- exposing a stable persistence-backed repository to the application layer
+
+### Database strategy introduced in Phase 0.2.3
+
+The current persistence baseline uses Drift with `NativeDatabase` for local storage in native environments.
+
+A local database named `plantel_exterior.db` is created under the application documents directory.
+
+This is the first point in the repository where the Plantel Exterior feature owns durable local state.
+
+### Application layer integration
+
+The new persistence layer is not consumed directly by widgets.
+
+A new provider chain connects the UI to persistence:
+
+- `plantelExteriorDatabaseProvider`
+- `outsidePlantRepositoryProvider`
+- `cajasPonOntListProvider`
+- `botellasEmpalmeListProvider`
+
+This preserves separation between:
+
+- rendering
+- feature/application orchestration
+- domain
+- persistence infrastructure
+
+### Updated dependency direction
+
+After Phase 0.2.3, the effective dependency path becomes:
+
+    UI
+        → application/providers
+        → repository contract + implementation
+        → Drift database
+        → local SQLite storage
+
+The domain layer remains free from direct Drift or SQL concerns.
+
+### Seed data architecture decision
+
+The repository implementation includes a controlled seed path executed through `ensureSeedData()`.
+
+Its responsibility is:
+
+- detect empty local tables
+- insert one initial Caja PON / ONT
+- insert one initial Botella de Empalme
+
+This guarantees the first persistence-backed screens can render meaningful information without requiring CRUD first.
+
+### Presentation impact of Phase 0.2.3
+
+The presentation layer no longer builds sample entities inline.
+
+Instead:
+
+- `PlantelExteriorHomeView` consumes provider-backed counts
+- `CajasPonOntScreen` loads persisted entities through the repository
+- `BotellasEmpalmeScreen` loads persisted entities through the repository
+
+This is the first time the visible module is backed by durable local state.
+
+### Platform limitation explicitly preserved
+
+Phase 0.2.3 intentionally does not implement web persistence yet.
+
+The current database opening path explicitly rejects web execution with an unsupported error.
+
+This limitation is architectural, explicit and phase-scoped, not accidental.
+
+### What Phase 0.2.3 still does not introduce
+
+This phase still does not introduce:
+
+- backend/domain synchronization
+- conflict resolution
+- reactive watchers/streams for entity collections
+- full CRUD UI
+- web persistence support
+- complex offline orchestration
+
+All of those remain future architectural steps.
+
+### Architectural significance of Phase 0.2.3
+
+Phase 0.2.3 is the first phase where the repository gains a real persistence layer under the Plantel Exterior feature without changing the runtime core.
+
+That makes it another foundational architectural milestone:
+
+- low risk for inherited runtime stability
+- high value for future offline and CRUD evolution
+- clear layering between domain and data
