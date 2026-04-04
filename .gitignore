@@ -123,3 +123,7 @@ android/key.properties
 
 # FVM Version Cache
 .fvm/
+
+git checkout main
+git pull origin main
+git checkout -b phase-0-2-3-local-persistence-baseline

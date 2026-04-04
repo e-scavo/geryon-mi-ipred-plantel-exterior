@@ -1,25 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/providers/outside_plant_providers.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/geo_point.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 
-class CajasPonOntScreen extends StatelessWidget {
+class CajasPonOntScreen extends ConsumerWidget {
   const CajasPonOntScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const caja = CajaPonOnt(
-      id: OutsidePlantId('caja-pon-ont-001'),
-      codigo: 'CP-001',
-      descripcion: 'Caja PON / ONT principal del sector inicial',
-      location: GeoPoint(
-        latitude: -32.9442,
-        longitude: -60.6505,
-      ),
-      syncStatus: SyncStatus.pending,
-    );
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cajasAsync = ref.watch(cajasPonOntListProvider);
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
@@ -31,93 +21,102 @@ class CajasPonOntScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Caja PON / ONT',
+                'Cajas PON / ONT',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.2.2 reemplaza el placeholder puro por una pantalla apoyada en una entidad real del dominio. '
-                'Todavía no existe CRUD ni persistencia, pero el dominio ya está tipado y conectado a la UI.',
+                'Phase 0.2.3 reemplaza los ejemplos hardcodeados por lectura real desde persistencia local. '
+                'La pantalla ya consume el repositorio del dominio respaldado por Drift.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
-              Card(
-                elevation: 2,
-                surfaceTintColor: theme.colorScheme.surface,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              cajasAsync.when(
+                data: (items) {
+                  if (items.isEmpty) {
+                    return const _EmptyState(
+                      title: 'Sin cajas registradas',
+                      message:
+                          'La base local está inicializada, pero no contiene cajas PON / ONT todavía.',
+                    );
+                  }
+
+                  return Column(
                     children: [
-                      Text(
-                        'Ejemplo de entidad real',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _InfoRow(
-                        label: 'ID',
-                        value: caja.id.value,
-                      ),
-                      _InfoRow(
-                        label: 'Código',
-                        value: caja.codigo,
-                      ),
-                      _InfoRow(
-                        label: 'Descripción',
-                        value: caja.descripcion,
-                      ),
-                      _InfoRow(
-                        label: 'Ubicación',
-                        value: caja.location == null
-                            ? 'Sin ubicación'
-                            : '${caja.location!.latitude}, ${caja.location!.longitude}',
-                      ),
-                      _InfoRow(
-                        label: 'Estado offline/sync',
-                        value: _syncStatusLabel(caja.syncStatus),
-                      ),
+                      for (final caja in items) ...[
+                        _CajaCard(caja: caja),
+                        const SizedBox(height: 16),
+                      ],
                     ],
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: CircularProgressIndicator(),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Card(
-                elevation: 1,
-                surfaceTintColor: theme.colorScheme.surface,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Qué habilita esta subfase',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      const _BulletText(
-                        'modelo real del dominio para Caja PON / ONT',
-                      ),
-                      const _BulletText(
-                        'base para persistencia local futura',
-                      ),
-                      const _BulletText(
-                        'base para sincronización futura',
-                      ),
-                      const _BulletText(
-                        'pantalla ya apoyada en una entidad tipada y no solo en texto estático',
-                      ),
-                    ],
-                  ),
+                error: (error, stack) => _ErrorState(
+                  message: error.toString(),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CajaCard extends StatelessWidget {
+  final CajaPonOnt caja;
+
+  const _CajaCard({
+    required this.caja,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 2,
+      surfaceTintColor: theme.colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              caja.codigo,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+            _InfoRow(label: 'ID', value: caja.id.value),
+            _InfoRow(label: 'Descripción', value: caja.descripcion),
+            _InfoRow(
+              label: 'Ubicación',
+              value: caja.location == null
+                  ? 'Sin ubicación'
+                  : '${caja.location!.latitude}, ${caja.location!.longitude}',
+            ),
+            _InfoRow(
+              label: 'Estado offline/sync',
+              value: _syncStatusLabel(caja.syncStatus),
+            ),
+            _InfoRow(
+              label: 'Creado',
+              value: caja.createdAt?.toIso8601String() ?? 'Sin dato',
+            ),
+            _InfoRow(
+              label: 'Actualizado',
+              value: caja.updatedAt?.toIso8601String() ?? 'Sin dato',
+            ),
+          ],
         ),
       ),
     );
@@ -171,33 +170,67 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _BulletText extends StatelessWidget {
-  final String text;
+class _EmptyState extends StatelessWidget {
+  final String title;
+  final String message;
 
-  const _BulletText(this.text);
+  const _EmptyState({
+    required this.title,
+    required this.message,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Icon(
-              Icons.check_circle_outline,
-              size: 18,
-              color: theme.colorScheme.primary,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const Icon(Icons.inbox_outlined, size: 42),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(text),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  final String message;
+
+  const _ErrorState({
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline, size: 42),
+            const SizedBox(height: 12),
+            const Text(
+              'No se pudo cargar la persistencia local de cajas PON / ONT',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

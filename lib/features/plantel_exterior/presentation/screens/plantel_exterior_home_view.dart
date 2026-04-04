@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/providers/outside_plant_providers.dart';
 import 'package:mi_ipred_plantel_exterior/shared/widgets/info_card.dart';
 
-class PlantelExteriorHomeView extends StatelessWidget {
+class PlantelExteriorHomeView extends ConsumerWidget {
   const PlantelExteriorHomeView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final bool isCompact = MediaQuery.of(context).size.width < 700;
+    final cajasAsync = ref.watch(cajasPonOntListProvider);
+    final botellasAsync = ref.watch(botellasEmpalmeListProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -25,27 +29,34 @@ class PlantelExteriorHomeView extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.2.2 incorpora la primera base real de dominio del producto. '
-                'La app mantiene runtime, login, sesión y backend intactos, pero ahora suma entidades tipadas, '
-                'value objects y contratos base para evolucionar hacia CRUD, persistencia local y offline simple.',
+                'Phase 0.2.3 agrega persistencia local real para Web + Android. '
+                'La home ya resume información almacenada en base local del módulo y deja listo el camino para CRUD, offline simple y sincronización futura.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
               Wrap(
                 spacing: 16,
                 runSpacing: 16,
-                children: const [
+                children: [
                   InfoCard(
-                    title: 'Entidad 1',
-                    value: 'Caja PON / ONT',
+                    title: 'Cajas PON / ONT',
+                    value: cajasAsync.when(
+                      data: (items) => '${items.length}',
+                      loading: () => 'Cargando...',
+                      error: (_, __) => 'Error',
+                    ),
                   ),
                   InfoCard(
-                    title: 'Entidad 2',
-                    value: 'Botella de Empalme',
+                    title: 'Botellas de Empalme',
+                    value: botellasAsync.when(
+                      data: (items) => '${items.length}',
+                      loading: () => 'Cargando...',
+                      error: (_, __) => 'Error',
+                    ),
                   ),
-                  InfoCard(
-                    title: 'Estado actual',
-                    value: 'Dominio base tipado',
+                  const InfoCard(
+                    title: 'Persistencia local',
+                    value: 'Drift activa',
                   ),
                 ],
               ),
@@ -74,15 +85,15 @@ class PlantelExteriorHomeView extends StatelessWidget {
                       ),
                       _buildBullet(
                         context,
-                        'La superficie principal sigue desacoplada del dashboard cliente heredado.',
+                        'La UI ya no depende de entidades hardcodeadas dentro de los widgets.',
                       ),
                       _buildBullet(
                         context,
-                        'El dominio ya existe como código real y no solo como placeholders visuales.',
+                        'Las secciones del dominio leen datos desde un repositorio local concreto.',
                       ),
                       _buildBullet(
                         context,
-                        'Se preparan contratos base para persistencia y sincronización futuras.',
+                        'La base queda preparada para formularios, CRUD y sync posterior.',
                       ),
                       if (isCompact) const SizedBox(height: 6),
                     ],
