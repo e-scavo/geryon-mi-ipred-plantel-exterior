@@ -126,3 +126,9 @@ android/.cxx/
 
 # FVM Version Cache
 .fvm/
+android/app/.cxx/
+android/.cxx/
+**/.cxx/
+keys/
+android/key.properties
+.fvm/
