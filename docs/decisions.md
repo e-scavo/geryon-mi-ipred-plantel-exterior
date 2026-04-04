@@ -12,7 +12,7 @@ The content is cumulative and aligned strictly with the real repository (ZIP as 
 
 - Stage: Stage 0 — Technical Bootstrap
 - Phase: Phase 0 — Technical Bootstrap
-- Subphase: Phase 0.2.1 — Domain Skeleton & Navigation Entry
+- Subphase: Phase 0.2.2 — Domain Modeling & Contracts Baseline
 
 ---
 
@@ -558,3 +558,129 @@ Project decisions now establish that:
 - Phase 0.1 created the technical clone baseline
 - Phase 0.2.1 created the first visible domain shell
 - future phases will build on top of that shell instead of returning to the inherited customer dashboard
+
+---
+
+## Phase 0.2.2 Decisions
+
+### 36. Introduce the domain layer before persistence
+
+Decision:
+
+The repository must introduce real domain entities and shared value objects before implementing local persistence.
+
+Reason:
+
+This avoids tying business structure to premature storage decisions and creates a clean base for repository implementations.
+
+Impact:
+
+The product now has a typed domain layer without forcing database choices yet.
+
+---
+
+### 37. Domain entities must be immutable
+
+Decision:
+
+The first domain entities are implemented as immutable objects.
+
+Reason:
+
+Immutability improves predictability, makes state transitions safer, and prepares the project for future sync/offline workflows.
+
+Impact:
+
+Future persistence and synchronization logic can evolve on top of stable entity snapshots.
+
+---
+
+### 38. Introduce value objects early
+
+Decision:
+
+Dedicated value objects such as `OutsidePlantId` and `GeoPoint` must exist from the first domain phase.
+
+Reason:
+
+This avoids primitive obsession and centralizes meaning for identifiers and coordinates.
+
+Impact:
+
+Future domain growth will be more consistent and easier to validate.
+
+---
+
+### 39. Introduce sync-oriented state as a domain concept
+
+Decision:
+
+A shared `SyncStatus` enum is introduced before implementing actual synchronization.
+
+Reason:
+
+The product roadmap already assumes offline/simple sync states, so the domain should acknowledge them early.
+
+Impact:
+
+The codebase gains a stable semantic placeholder for future offline-first behavior.
+
+---
+
+### 40. Define repository contract before repository implementation
+
+Decision:
+
+A repository contract must be introduced now, but its implementation is deferred.
+
+Reason:
+
+This creates a clean architectural boundary between domain and future data sources such as local DB, backend, or hybrid persistence.
+
+Impact:
+
+Later phases can implement storage without having to redesign domain-facing APIs first.
+
+---
+
+### 41. Presentation must stop depending on pure placeholder text
+
+Decision:
+
+The Plantel Exterior screens must begin depending on real domain objects rather than placeholder-only messages.
+
+Reason:
+
+Without domain-aware presentation, the repository would remain visually reoriented but structurally empty.
+
+Impact:
+
+The visible product shell now reflects real domain code.
+
+---
+
+### 42. Keep runtime untouched during domain introduction
+
+Decision:
+
+Phase 0.2.2 must not alter ServiceProvider, startup orchestration, backend transport or session continuity.
+
+Reason:
+
+The purpose of the phase is domain introduction, not runtime redesign.
+
+Impact:
+
+The new domain baseline is introduced with minimal operational risk.
+
+---
+
+## Updated summary after Phase 0.2.2
+
+Project decisions now establish a three-step bootstrap sequence:
+
+- Phase 0.1 → technical identity and controlled clone baseline
+- Phase 0.2.1 → visible Plantel Exterior shell and navigation entry
+- Phase 0.2.2 → first real domain entities, value objects and repository contract baseline
+
+Future phases must build on this sequence instead of bypassing it.

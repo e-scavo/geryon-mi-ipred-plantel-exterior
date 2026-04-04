@@ -6,7 +6,7 @@ The flows described here correspond to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.2.1 — Domain Skeleton & Navigation Entry
+- Phase 0.2.2 — Domain Modeling & Contracts Baseline
 
 At this stage, flows are inherited from Mi IP·RED and must be preserved without functional redesign.
 
@@ -464,3 +464,89 @@ Only the visible destination and local domain navigation entry change.
 ### Flow significance
 
 This phase is the first transition where the repository stops flowing visibly into a customer-product dashboard and starts flowing into a field-domain entry surface.
+
+---
+
+## Phase 0.2.2 Flow Extension — Domain-aware Presentation Baseline
+
+Phase 0.2.2 preserves the runtime-controlled flow introduced in previous phases, but changes what happens inside the visible Plantel Exterior sections.
+
+### Before Phase 0.2.2
+
+The section flow was:
+
+    App startup
+        → runtime ready
+        → PlantelExteriorHomeScreen
+        → user opens a section
+        → placeholder-only presentation
+
+### After Phase 0.2.2
+
+The section flow becomes:
+
+    App startup
+        → runtime ready
+        → PlantelExteriorHomeScreen
+        → user opens a section
+        → section builds a real domain entity
+        → UI renders typed domain fields
+
+### Caja PON / ONT section flow
+
+Current conceptual flow:
+
+    Drawer
+        → Cajas PON / ONT
+        → CajasPonOntScreen
+        → instantiate CajaPonOnt
+        → render:
+            - id
+            - code
+            - description
+            - optional location
+            - sync status
+
+### Botella de Empalme section flow
+
+Current conceptual flow:
+
+    Drawer
+        → Botellas de Empalme
+        → BotellasEmpalmeScreen
+        → instantiate BotellaEmpalme
+        → render:
+            - id
+            - code
+            - description
+            - optional location
+            - sync status
+
+### Home section flow update
+
+The home view now explains that the repository includes:
+
+- real domain entities
+- value objects
+- repository contracts baseline
+
+This means the home section is no longer describing only a visual shell.  
+It now describes a structural domain milestone.
+
+### Important limitation of current flow
+
+Even after Phase 0.2.2, these flows are still:
+
+- in-memory
+- example-driven
+- non-persistent
+- not backend-backed
+
+That is acceptable because the objective of the phase is to introduce domain structure, not data infrastructure.
+
+### Flow significance of Phase 0.2.2
+
+This phase introduces the first **domain-aware presentation flow** of the repository.
+
+The UI no longer renders only textual placeholders.  
+It now renders information derived from explicit domain objects, which is the necessary bridge toward CRUD, persistence and offline flows in later phases.

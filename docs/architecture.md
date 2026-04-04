@@ -6,7 +6,7 @@ The architecture described here corresponds to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.2.1 — Domain Skeleton & Navigation Entry
+- Phase 0.2.2 — Domain Modeling & Contracts Baseline
 
 At this stage, the architecture is **inherited from Mi IP·RED**, with identity normalization applied, but without structural redesign.
 
@@ -481,3 +481,125 @@ Even after Phase 0.2.1, the following remain forbidden:
 This phase introduces a **new top-level visible feature surface** without changing the structural runtime core.
 
 That makes it a low-risk but high-importance architectural transition.
+
+---
+
+## Phase 0.2.2 Architectural Extension — Domain Modeling & Contracts Baseline
+
+Phase 0.2.2 keeps the runtime architecture introduced in earlier phases intact, but it adds the first dedicated domain layer inside the Plantel Exterior feature.
+
+### New domain layer introduced
+
+A new domain structure is added under:
+
+    lib/features/plantel_exterior/domain/
+
+Its internal organization is:
+
+    lib/features/plantel_exterior/domain/
+      value_objects/
+        outside_plant_id.dart
+        geo_point.dart
+      enums/
+        sync_status.dart
+      entities/
+        caja_pon_ont.dart
+        botella_empalme.dart
+      contracts/
+        outside_plant_repository_contract.dart
+
+### Architectural role of the domain layer
+
+This layer is responsible for:
+
+- representing the first real business entities of the product
+- centralizing reusable value objects
+- defining a first shared sync/offline status type
+- establishing a repository contract baseline for future persistence work
+
+### Design constraints of the domain layer
+
+The new domain layer must remain:
+
+- independent from UI widgets
+- independent from ServiceProvider
+- independent from backend transport implementation
+- independent from storage implementation details
+
+This preserves clean layering and avoids prematurely coupling domain rules to persistence or transport.
+
+### Entities introduced
+
+The first explicit domain entities added are:
+
+- `CajaPonOnt`
+- `BotellaEmpalme`
+
+Each entity now centralizes core typed fields such as:
+
+- identifier
+- code
+- description
+- optional location
+- sync status
+- optional creation/update timestamps
+
+### Value objects introduced
+
+The first shared value objects are:
+
+- `OutsidePlantId`
+- `GeoPoint`
+
+These reduce primitive-only modeling and prepare the codebase for stronger consistency in later phases.
+
+### Enum introduced
+
+A shared enum is introduced:
+
+- `SyncStatus`
+  - `pending`
+  - `synced`
+  - `error`
+
+This is architecturally important because it prepares the product for future offline-first behavior without implementing the full engine yet.
+
+### Contract introduced
+
+A first repository contract is introduced:
+
+- `OutsidePlantRepositoryContract`
+
+Its role is not to implement persistence yet, but to define a stable boundary for future data access work.
+
+### Impact on presentation layer
+
+The presentation layer now consumes domain entities instead of depending on placeholder-only copy.
+
+This means:
+
+- `CajasPonOntScreen` renders a real `CajaPonOnt`
+- `BotellasEmpalmeScreen` renders a real `BotellaEmpalme`
+- `PlantelExteriorHomeView` now documents the existence of a typed domain baseline
+
+### What Phase 0.2.2 still does not introduce
+
+This phase still does not introduce:
+
+- local database implementation
+- repository implementation
+- backend mapping
+- synchronization engine
+- map workflows
+- advanced domain services
+
+All of those remain future architectural steps.
+
+### Architectural significance of Phase 0.2.2
+
+Phase 0.2.2 is the first phase where the repository gains a true internal business structure without modifying the runtime core.
+
+That makes it a foundational architectural milestone:
+
+- low risk for current runtime
+- high value for future product evolution
