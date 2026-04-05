@@ -7,7 +7,14 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 
 class CajaFormScreen extends ConsumerStatefulWidget {
-  const CajaFormScreen({super.key});
+  final CajaPonOnt? caja;
+
+  const CajaFormScreen({
+    super.key,
+    this.caja,
+  });
+
+  bool get isEditMode => caja != null;
 
   @override
   ConsumerState<CajaFormScreen> createState() => _CajaFormScreenState();
@@ -16,13 +23,31 @@ class CajaFormScreen extends ConsumerStatefulWidget {
 class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _codigoController = TextEditingController();
-  final TextEditingController _descripcionController = TextEditingController();
-  final TextEditingController _latitudeController = TextEditingController();
-  final TextEditingController _longitudeController = TextEditingController();
+  late final TextEditingController _codigoController;
+  late final TextEditingController _descripcionController;
+  late final TextEditingController _latitudeController;
+  late final TextEditingController _longitudeController;
 
   bool _saving = false;
   String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _codigoController = TextEditingController(
+      text: widget.caja?.codigo ?? '',
+    );
+    _descripcionController = TextEditingController(
+      text: widget.caja?.descripcion ?? '',
+    );
+    _latitudeController = TextEditingController(
+      text: widget.caja?.location?.latitude.toString() ?? '',
+    );
+    _longitudeController = TextEditingController(
+      text: widget.caja?.location?.longitude.toString() ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -33,7 +58,7 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _handleSave() async {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) {
@@ -66,19 +91,31 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
     try {
       final now = DateTime.now();
 
-      final entity = CajaPonOnt(
-        id: OutsidePlantId(
-          'caja-${now.microsecondsSinceEpoch}',
-        ),
-        codigo: _codigoController.text.trim(),
-        descripcion: _descripcionController.text.trim(),
-        location: latitude != null && longitude != null
-            ? GeoPoint(latitude: latitude, longitude: longitude)
-            : null,
-        syncStatus: SyncStatus.pending,
-        createdAt: now,
-        updatedAt: now,
-      );
+      final entity = widget.isEditMode
+          ? CajaPonOnt(
+              id: widget.caja!.id,
+              codigo: _codigoController.text.trim(),
+              descripcion: _descripcionController.text.trim(),
+              location: latitude != null && longitude != null
+                  ? GeoPoint(latitude: latitude, longitude: longitude)
+                  : null,
+              syncStatus: SyncStatus.pending,
+              createdAt: widget.caja!.createdAt,
+              updatedAt: now,
+            )
+          : CajaPonOnt(
+              id: OutsidePlantId(
+                'caja-${now.microsecondsSinceEpoch}',
+              ),
+              codigo: _codigoController.text.trim(),
+              descripcion: _descripcionController.text.trim(),
+              location: latitude != null && longitude != null
+                  ? GeoPoint(latitude: latitude, longitude: longitude)
+                  : null,
+              syncStatus: SyncStatus.pending,
+              createdAt: now,
+              updatedAt: now,
+            );
 
       final repository = ref.read(outsidePlantRepositoryProvider);
       await repository.saveCajaPonOnt(entity);
@@ -102,10 +139,13 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isEditMode = widget.isEditMode;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nueva Caja PON / ONT'),
+        title: Text(
+          isEditMode ? 'Editar Caja PON / ONT' : 'Nueva Caja PON / ONT',
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -123,7 +163,9 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Alta de Caja PON / ONT',
+                        isEditMode
+                            ? 'Edición de Caja PON / ONT'
+                            : 'Alta de Caja PON / ONT',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -201,7 +243,7 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                           ),
                           const SizedBox(width: 12),
                           FilledButton(
-                            onPressed: _saving ? null : _submit,
+                            onPressed: _saving ? null : _handleSave,
                             child: _saving
                                 ? const SizedBox(
                                     width: 18,
@@ -210,7 +252,7 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Guardar'),
+                                : Text(isEditMode ? 'Actualizar' : 'Guardar'),
                           ),
                         ],
                       ),

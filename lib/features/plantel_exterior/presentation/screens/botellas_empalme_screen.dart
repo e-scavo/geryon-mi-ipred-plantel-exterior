@@ -16,6 +16,17 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _openEditForm(
+    BuildContext context,
+    BotellaEmpalme botella,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BotellaFormScreen(botella: botella),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final botellasAsync = ref.watch(botellasEmpalmeListProvider);
@@ -49,7 +60,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.3.1 incorpora alta real de botellas de empalme con formulario y persistencia directa sobre el repositorio local.',
+                'Phase 0.3.2 incorpora edición real de botellas de empalme reutilizando el formulario de alta y persistiendo los cambios sobre la base local.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -66,7 +77,10 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                   return Column(
                     children: [
                       for (final botella in items) ...[
-                        _BotellaCard(botella: botella),
+                        _BotellaCard(
+                          botella: botella,
+                          onEdit: () => _openEditForm(context, botella),
+                        ),
                         const SizedBox(height: 16),
                       ],
                     ],
@@ -92,9 +106,11 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
 
 class _BotellaCard extends StatelessWidget {
   final BotellaEmpalme botella;
+  final VoidCallback onEdit;
 
   const _BotellaCard({
     required this.botella,
+    required this.onEdit,
   });
 
   @override
@@ -109,11 +125,23 @@ class _BotellaCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              botella.codigo,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    botella.codigo,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar'),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
             _InfoRow(label: 'ID', value: botella.id.value),

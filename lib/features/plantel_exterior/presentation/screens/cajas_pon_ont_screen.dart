@@ -16,6 +16,17 @@ class CajasPonOntScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _openEditForm(
+    BuildContext context,
+    CajaPonOnt caja,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CajaFormScreen(caja: caja),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cajasAsync = ref.watch(cajasPonOntListProvider);
@@ -49,7 +60,7 @@ class CajasPonOntScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.3.1 incorpora alta real de cajas PON / ONT con formulario y persistencia directa sobre el repositorio local.',
+                'Phase 0.3.2 incorpora edición real de cajas PON / ONT reutilizando el formulario de alta y persistiendo los cambios sobre la base local.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -66,7 +77,10 @@ class CajasPonOntScreen extends ConsumerWidget {
                   return Column(
                     children: [
                       for (final caja in items) ...[
-                        _CajaCard(caja: caja),
+                        _CajaCard(
+                          caja: caja,
+                          onEdit: () => _openEditForm(context, caja),
+                        ),
                         const SizedBox(height: 16),
                       ],
                     ],
@@ -92,9 +106,11 @@ class CajasPonOntScreen extends ConsumerWidget {
 
 class _CajaCard extends StatelessWidget {
   final CajaPonOnt caja;
+  final VoidCallback onEdit;
 
   const _CajaCard({
     required this.caja,
+    required this.onEdit,
   });
 
   @override
@@ -109,11 +125,23 @@ class _CajaCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              caja.codigo,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    caja.codigo,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar'),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
             _InfoRow(label: 'ID', value: caja.id.value),

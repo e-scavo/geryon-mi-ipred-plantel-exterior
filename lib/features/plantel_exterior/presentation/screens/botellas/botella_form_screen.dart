@@ -7,7 +7,14 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 
 class BotellaFormScreen extends ConsumerStatefulWidget {
-  const BotellaFormScreen({super.key});
+  final BotellaEmpalme? botella;
+
+  const BotellaFormScreen({
+    super.key,
+    this.botella,
+  });
+
+  bool get isEditMode => botella != null;
 
   @override
   ConsumerState<BotellaFormScreen> createState() => _BotellaFormScreenState();
@@ -16,13 +23,31 @@ class BotellaFormScreen extends ConsumerStatefulWidget {
 class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _codigoController = TextEditingController();
-  final TextEditingController _descripcionController = TextEditingController();
-  final TextEditingController _latitudeController = TextEditingController();
-  final TextEditingController _longitudeController = TextEditingController();
+  late final TextEditingController _codigoController;
+  late final TextEditingController _descripcionController;
+  late final TextEditingController _latitudeController;
+  late final TextEditingController _longitudeController;
 
   bool _saving = false;
   String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _codigoController = TextEditingController(
+      text: widget.botella?.codigo ?? '',
+    );
+    _descripcionController = TextEditingController(
+      text: widget.botella?.descripcion ?? '',
+    );
+    _latitudeController = TextEditingController(
+      text: widget.botella?.location?.latitude.toString() ?? '',
+    );
+    _longitudeController = TextEditingController(
+      text: widget.botella?.location?.longitude.toString() ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -33,7 +58,7 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _handleSave() async {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) {
@@ -66,19 +91,31 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
     try {
       final now = DateTime.now();
 
-      final entity = BotellaEmpalme(
-        id: OutsidePlantId(
-          'botella-${now.microsecondsSinceEpoch}',
-        ),
-        codigo: _codigoController.text.trim(),
-        descripcion: _descripcionController.text.trim(),
-        location: latitude != null && longitude != null
-            ? GeoPoint(latitude: latitude, longitude: longitude)
-            : null,
-        syncStatus: SyncStatus.pending,
-        createdAt: now,
-        updatedAt: now,
-      );
+      final entity = widget.isEditMode
+          ? BotellaEmpalme(
+              id: widget.botella!.id,
+              codigo: _codigoController.text.trim(),
+              descripcion: _descripcionController.text.trim(),
+              location: latitude != null && longitude != null
+                  ? GeoPoint(latitude: latitude, longitude: longitude)
+                  : null,
+              syncStatus: SyncStatus.pending,
+              createdAt: widget.botella!.createdAt,
+              updatedAt: now,
+            )
+          : BotellaEmpalme(
+              id: OutsidePlantId(
+                'botella-${now.microsecondsSinceEpoch}',
+              ),
+              codigo: _codigoController.text.trim(),
+              descripcion: _descripcionController.text.trim(),
+              location: latitude != null && longitude != null
+                  ? GeoPoint(latitude: latitude, longitude: longitude)
+                  : null,
+              syncStatus: SyncStatus.pending,
+              createdAt: now,
+              updatedAt: now,
+            );
 
       final repository = ref.read(outsidePlantRepositoryProvider);
       await repository.saveBotellaEmpalme(entity);
@@ -102,10 +139,13 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isEditMode = widget.isEditMode;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nueva Botella de Empalme'),
+        title: Text(
+          isEditMode ? 'Editar Botella de Empalme' : 'Nueva Botella de Empalme',
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -123,7 +163,9 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Alta de Botella de Empalme',
+                        isEditMode
+                            ? 'Edición de Botella de Empalme'
+                            : 'Alta de Botella de Empalme',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -201,7 +243,7 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
                           ),
                           const SizedBox(width: 12),
                           FilledButton(
-                            onPressed: _saving ? null : _submit,
+                            onPressed: _saving ? null : _handleSave,
                             child: _saving
                                 ? const SizedBox(
                                     width: 18,
@@ -210,7 +252,7 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Guardar'),
+                                : Text(isEditMode ? 'Actualizar' : 'Guardar'),
                           ),
                         ],
                       ),
