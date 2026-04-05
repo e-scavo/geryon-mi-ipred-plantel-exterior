@@ -5,6 +5,7 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/mappers
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/contracts/outside_plant_repository_contract.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 import 'package:synchronized/synchronized.dart';
 
 class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
@@ -107,5 +108,19 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
     await db.into(db.botellasEmpalmeTable).insertOnConflictUpdate(
           BotellaEmpalmeMapper.toCompanion(botella),
         );
+  }
+
+  @override
+  Future<void> deleteCajaPonOnt(OutsidePlantId id) async {
+    final query = db.delete(db.cajasPonOntTable)
+      ..where((tbl) => tbl.id.equals(id.value));
+    await query.go();
+  }
+
+  @override
+  Future<void> deleteBotellaEmpalme(OutsidePlantId id) async {
+    final query = db.delete(db.botellasEmpalmeTable)
+      ..where((tbl) => tbl.id.equals(id.value));
+    await query.go();
   }
 }

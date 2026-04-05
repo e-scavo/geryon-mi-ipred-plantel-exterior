@@ -27,6 +27,43 @@ class CajasPonOntScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    CajaPonOnt caja,
+  ) async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('Eliminar caja'),
+              content: Text(
+                '¿Querés eliminar la caja "${caja.codigo}"?\n\nEsta acción no se puede deshacer.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Eliminar'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (!confirmed) {
+      return;
+    }
+
+    final repository = ref.read(outsidePlantRepositoryProvider);
+    await repository.deleteCajaPonOnt(caja.id);
+    ref.invalidate(cajasPonOntListProvider);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cajasAsync = ref.watch(cajasPonOntListProvider);
@@ -60,7 +97,7 @@ class CajasPonOntScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.3.2 incorpora edición real de cajas PON / ONT reutilizando el formulario de alta y persistiendo los cambios sobre la base local.',
+                'Phase 0.3.3 incorpora borrado real de cajas PON / ONT con confirmación previa y persistencia directa sobre la base local.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -80,6 +117,7 @@ class CajasPonOntScreen extends ConsumerWidget {
                         _CajaCard(
                           caja: caja,
                           onEdit: () => _openEditForm(context, caja),
+                          onDelete: () => _confirmDelete(context, ref, caja),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -107,10 +145,12 @@ class CajasPonOntScreen extends ConsumerWidget {
 class _CajaCard extends StatelessWidget {
   final CajaPonOnt caja;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const _CajaCard({
     required this.caja,
     required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -136,10 +176,21 @@ class _CajaCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Editar'),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit_outlined),
+                      label: const Text('Editar'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Eliminar'),
+                    ),
+                  ],
                 ),
               ],
             ),
