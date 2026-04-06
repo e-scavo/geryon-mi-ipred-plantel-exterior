@@ -9,22 +9,34 @@ class CajasPonOntScreen extends ConsumerWidget {
   const CajasPonOntScreen({super.key});
 
   Future<void> _openCreateForm(BuildContext context) async {
-    await Navigator.of(context).push(
+    final message = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) => const CajaFormScreen(),
       ),
     );
+
+    if (message != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   Future<void> _openEditForm(
     BuildContext context,
     CajaPonOnt caja,
   ) async {
-    await Navigator.of(context).push(
+    final message = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) => CajaFormScreen(caja: caja),
       ),
     );
+
+    if (message != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   Future<void> _confirmDelete(
@@ -59,9 +71,29 @@ class CajasPonOntScreen extends ConsumerWidget {
       return;
     }
 
-    final repository = ref.read(outsidePlantRepositoryProvider);
-    await repository.deleteCajaPonOnt(caja.id);
-    ref.invalidate(cajasPonOntListProvider);
+    try {
+      final repository = ref.read(outsidePlantRepositoryProvider);
+      await repository.deleteCajaPonOnt(caja.id);
+      ref.invalidate(cajasPonOntListProvider);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Caja "${caja.codigo}" eliminada correctamente.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'No se pudo eliminar la caja "${caja.codigo}". ${e.toString()}',
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -97,7 +129,7 @@ class CajasPonOntScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.3.3 incorpora borrado real de cajas PON / ONT con confirmación previa y persistencia directa sobre la base local.',
+                'Phase 0.3.4 mejora la experiencia de uso del CRUD con feedback visual más claro, validaciones más sólidas y acciones mejor comunicadas.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -107,7 +139,7 @@ class CajasPonOntScreen extends ConsumerWidget {
                     return const _EmptyState(
                       title: 'Sin cajas registradas',
                       message:
-                          'Todavía no hay cajas PON / ONT cargadas en la base local.',
+                          'Todavía no hay cajas PON / ONT cargadas en la base local. Usá "Nueva caja" para crear la primera.',
                     );
                   }
 
@@ -124,13 +156,11 @@ class CajasPonOntScreen extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: CircularProgressIndicator(),
-                  ),
+                loading: () => const _LoadingState(
+                  label: 'Cargando cajas PON / ONT...',
                 ),
                 error: (error, stack) => _ErrorState(
+                  title: 'No se pudieron cargar las cajas PON / ONT',
                   message: error.toString(),
                 ),
               ),
@@ -269,6 +299,37 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
+class _LoadingState extends StatelessWidget {
+  final String label;
+
+  const _LoadingState({
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   final String title;
   final String message;
@@ -304,9 +365,11 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _ErrorState extends StatelessWidget {
+  final String title;
   final String message;
 
   const _ErrorState({
+    required this.title,
     required this.message,
   });
 
@@ -319,8 +382,8 @@ class _ErrorState extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 42),
             const SizedBox(height: 12),
-            const Text(
-              'No se pudieron cargar las cajas PON / ONT',
+            Text(
+              title,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),

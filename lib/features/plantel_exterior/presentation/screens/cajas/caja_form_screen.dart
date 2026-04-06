@@ -58,6 +58,36 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
     super.dispose();
   }
 
+  String? _validateCodigo(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return 'El código es obligatorio.';
+    }
+    if (text.length < 3) {
+      return 'El código debe tener al menos 3 caracteres.';
+    }
+    return null;
+  }
+
+  String? _validateDescripcion(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return 'La descripción es obligatoria.';
+    }
+    if (text.length < 5) {
+      return 'La descripción debe tener al menos 5 caracteres.';
+    }
+    return null;
+  }
+
+  double? _tryParseCoordinate(String text) {
+    final normalized = text.trim().replaceAll(',', '.');
+    if (normalized.isEmpty) {
+      return null;
+    }
+    return double.tryParse(normalized);
+  }
+
   Future<void> _handleSave() async {
     FocusScope.of(context).unfocus();
 
@@ -68,19 +98,39 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
     final latText = _latitudeController.text.trim();
     final lngText = _longitudeController.text.trim();
 
-    double? latitude;
-    double? longitude;
+    final latitude = _tryParseCoordinate(latText);
+    final longitude = _tryParseCoordinate(lngText);
 
-    if (latText.isNotEmpty || lngText.isNotEmpty) {
-      latitude = double.tryParse(latText);
-      longitude = double.tryParse(lngText);
+    final hasAnyCoordinate = latText.isNotEmpty || lngText.isNotEmpty;
+    final hasBothCoordinates = latText.isNotEmpty && lngText.isNotEmpty;
 
-      if (latitude == null || longitude == null) {
-        setState(() {
-          _errorText = 'Latitud y longitud deben ser números válidos.';
-        });
-        return;
-      }
+    if (hasAnyCoordinate && !hasBothCoordinates) {
+      setState(() {
+        _errorText =
+            'Si informás ubicación, debés completar latitud y longitud.';
+      });
+      return;
+    }
+
+    if (hasBothCoordinates && (latitude == null || longitude == null)) {
+      setState(() {
+        _errorText = 'Latitud y longitud deben ser números válidos.';
+      });
+      return;
+    }
+
+    if (latitude != null && (latitude < -90 || latitude > 90)) {
+      setState(() {
+        _errorText = 'La latitud debe estar entre -90 y 90.';
+      });
+      return;
+    }
+
+    if (longitude != null && (longitude < -180 || longitude > 180)) {
+      setState(() {
+        _errorText = 'La longitud debe estar entre -180 y 180.';
+      });
+      return;
     }
 
     setState(() {
@@ -121,11 +171,18 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
       await repository.saveCajaPonOnt(entity);
       ref.invalidate(cajasPonOntListProvider);
 
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(context).pop(
+        widget.isEditMode
+            ? 'Caja actualizada correctamente.'
+            : 'Caja creada correctamente.',
+      );
     } catch (e) {
       setState(() {
-        _errorText = e.toString();
+        _errorText = 'No se pudo guardar la caja. ${e.toString()}';
       });
     } finally {
       if (mounted) {
@@ -170,38 +227,40 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
+                      Text(
+                        isEditMode
+                            ? 'Modificá los datos necesarios y guardá los cambios.'
+                            : 'Completá los datos mínimos para crear una nueva caja.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 20),
                       TextFormField(
                         controller: _codigoController,
+                        enabled: !_saving,
+                        textInputAction: TextInputAction.next,
                         decoration: const InputDecoration(
                           labelText: 'Código',
                           border: OutlineInputBorder(),
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'El código es obligatorio.';
-                          }
-                          return null;
-                        },
+                        validator: _validateCodigo,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _descripcionController,
+                        enabled: !_saving,
                         maxLines: 3,
+                        textInputAction: TextInputAction.newline,
                         decoration: const InputDecoration(
                           labelText: 'Descripción',
                           border: OutlineInputBorder(),
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'La descripción es obligatoria.';
-                          }
-                          return null;
-                        },
+                        validator: _validateDescripcion,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _latitudeController,
+                        enabled: !_saving,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                           signed: true,
@@ -209,11 +268,13 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Latitud (opcional)',
                           border: OutlineInputBorder(),
+                          hintText: '-32.9442',
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _longitudeController,
+                        enabled: !_saving,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                           signed: true,
@@ -221,30 +282,40 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Longitud (opcional)',
                           border: OutlineInputBorder(),
+                          hintText: '-60.6505',
                         ),
                       ),
                       if (_errorText != null) ...[
                         const SizedBox(height: 16),
-                        Text(
-                          _errorText!,
-                          style: TextStyle(
-                            color: theme.colorScheme.error,
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _errorText!,
+                            style: TextStyle(
+                              color: theme.colorScheme.onErrorContainer,
+                            ),
                           ),
                         ),
                       ],
                       const SizedBox(height: 24),
-                      Row(
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
                         children: [
                           OutlinedButton(
                             onPressed: _saving
                                 ? null
-                                : () => Navigator.of(context).pop(false),
+                                : () => Navigator.of(context).pop(),
                             child: const Text('Cancelar'),
                           ),
-                          const SizedBox(width: 12),
-                          FilledButton(
+                          FilledButton.icon(
                             onPressed: _saving ? null : _handleSave,
-                            child: _saving
+                            icon: _saving
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
@@ -252,7 +323,18 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : Text(isEditMode ? 'Actualizar' : 'Guardar'),
+                                : Icon(
+                                    isEditMode
+                                        ? Icons.save_outlined
+                                        : Icons.add_circle_outline,
+                                  ),
+                            label: Text(
+                              _saving
+                                  ? (isEditMode
+                                      ? 'Actualizando...'
+                                      : 'Guardando...')
+                                  : (isEditMode ? 'Actualizar' : 'Guardar'),
+                            ),
                           ),
                         ],
                       ),

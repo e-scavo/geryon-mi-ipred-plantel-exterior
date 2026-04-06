@@ -9,22 +9,34 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
   const BotellasEmpalmeScreen({super.key});
 
   Future<void> _openCreateForm(BuildContext context) async {
-    await Navigator.of(context).push(
+    final message = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) => const BotellaFormScreen(),
       ),
     );
+
+    if (message != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   Future<void> _openEditForm(
     BuildContext context,
     BotellaEmpalme botella,
   ) async {
-    await Navigator.of(context).push(
+    final message = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) => BotellaFormScreen(botella: botella),
       ),
     );
+
+    if (message != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   Future<void> _confirmDelete(
@@ -59,9 +71,31 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
       return;
     }
 
-    final repository = ref.read(outsidePlantRepositoryProvider);
-    await repository.deleteBotellaEmpalme(botella.id);
-    ref.invalidate(botellasEmpalmeListProvider);
+    try {
+      final repository = ref.read(outsidePlantRepositoryProvider);
+      await repository.deleteBotellaEmpalme(botella.id);
+      ref.invalidate(botellasEmpalmeListProvider);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Botella "${botella.codigo}" eliminada correctamente.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'No se pudo eliminar la botella "${botella.codigo}". ${e.toString()}',
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -97,7 +131,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.3.3 incorpora borrado real de botellas de empalme con confirmación previa y persistencia directa sobre la base local.',
+                'Phase 0.3.4 mejora la experiencia de uso del CRUD con feedback visual más claro, validaciones más sólidas y acciones mejor comunicadas.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -107,7 +141,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                     return const _EmptyState(
                       title: 'Sin botellas registradas',
                       message:
-                          'Todavía no hay botellas de empalme cargadas en la base local.',
+                          'Todavía no hay botellas de empalme cargadas en la base local. Usá "Nueva botella" para crear la primera.',
                     );
                   }
 
@@ -124,13 +158,11 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: CircularProgressIndicator(),
-                  ),
+                loading: () => const _LoadingState(
+                  label: 'Cargando botellas de empalme...',
                 ),
                 error: (error, stack) => _ErrorState(
+                  title: 'No se pudieron cargar las botellas de empalme',
                   message: error.toString(),
                 ),
               ),
@@ -269,6 +301,37 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
+class _LoadingState extends StatelessWidget {
+  final String label;
+
+  const _LoadingState({
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   final String title;
   final String message;
@@ -304,9 +367,11 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _ErrorState extends StatelessWidget {
+  final String title;
   final String message;
 
   const _ErrorState({
+    required this.title,
     required this.message,
   });
 
@@ -319,8 +384,8 @@ class _ErrorState extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 42),
             const SizedBox(height: 12),
-            const Text(
-              'No se pudieron cargar las botellas de empalme',
+            Text(
+              title,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
