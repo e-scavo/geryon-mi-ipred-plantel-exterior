@@ -12,7 +12,7 @@ The content is cumulative and aligned strictly with the real repository (ZIP as 
 
 - Stage: Stage 0 — Technical Bootstrap
 - Phase: Phase 0 — Technical Bootstrap
-- Subphase: Phase 0.2.3 — Local Persistence Baseline
+- Subphase: Phase 0.3.4 — CRUD UX Minimum Layer
 
 ---
 
@@ -828,3 +828,95 @@ Project decisions now establish a four-step bootstrap sequence:
 - Phase 0.2.3 → first concrete local persistence layer with Drift-backed repository reads
 
 Future phases must build on this sequence instead of bypassing it.
+
+---
+
+## Phase 0.2.4 Decisions
+
+### 51. Enable web-compatible persistence
+
+Decision:
+
+Persistence must be extended to support Web execution.
+
+Reason:
+
+The product targets Web as a first-class platform.
+
+Impact:
+
+- persistence must be platform-aware
+- WASM-based database handling is required
+
+---
+
+## Phase 0.3.1 Decisions
+
+### 52. Introduce create operations over persistence
+
+Decision:
+
+The system must support entity creation backed by persistence.
+
+Impact:
+
+- repository must support insert
+- UI must trigger creation flows
+
+---
+
+## Phase 0.3.2 Decisions
+
+### 53. Introduce update operations over persistence
+
+Decision:
+
+The system must support entity updates.
+
+Impact:
+
+- repository must support update
+- domain identity must be preserved
+
+---
+
+## Phase 0.3.3 Decisions
+
+### 54. Introduce delete operations over persistence
+
+Decision:
+
+The system must support entity deletion.
+
+Impact:
+
+- repository must support delete
+- UI must enforce confirmation
+
+---
+
+## Phase 0.3.4 Decisions
+
+### 55. Introduce minimum UX layer over CRUD
+
+Decision:
+
+The system must include validation, feedback, and loading states.
+
+Impact:
+
+- improves usability
+- reduces operational errors
+
+---
+
+## Updated summary after Phase 0.3.4
+
+Project decisions now establish:
+
+- Phase 0.1 → technical baseline
+- Phase 0.2.x → domain + persistence
+- Phase 0.3.x → full CRUD + UX layer
+
+The system is now ready for backend synchronization phases.
+

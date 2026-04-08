@@ -6,7 +6,7 @@ The flows described here correspond to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.2.3 — Local Persistence Baseline
+- Phase 0.3.4 — CRUD UX Minimum Layer
 
 At this stage, flows are inherited from Mi IP·RED and must be preserved without functional redesign.
 
@@ -667,3 +667,112 @@ This phase introduces the first **persistence-backed presentation flow** of the 
 
 The Plantel Exterior UI no longer depends on placeholder strings or manually instantiated entities.
 It now depends on repository-mediated local storage, which is the necessary bridge toward CRUD, offline and synchronization work in later phases.
+
+---
+
+## Phase 0.2.4 Flow Extension — Web Persistence Support
+
+Phase 0.2.4 extends the persistence-backed flows to Web environments.
+
+### New flow characteristics
+
+    Provider initialization
+        → platform-aware DB selection
+        → WASM-compatible database initialization
+        → ensure correct resource loading
+        → proceed with persistence-backed flows
+
+### Impact
+
+- persistence flows now execute across:
+  - Android
+  - Desktop
+  - Web
+- no change to runtime ownership (ServiceProvider remains unchanged)
+
+---
+
+## Phase 0.3.1 Flow Extension — Create
+
+Phase 0.3.1 introduces creation flows into the system.
+
+### Create flow
+
+    User action (create)
+        → UI form input
+        → provider call
+        → repository insert
+        → database write
+        → provider invalidation
+        → UI refresh
+
+### Impact
+
+- transitions from read-only to write-enabled system
+- first full user-driven data mutation flow
+
+---
+
+## Phase 0.3.2 Flow Extension — Update
+
+Phase 0.3.2 introduces update flows.
+
+### Update flow
+
+    User action (edit)
+        → UI loads entity
+        → user modifies fields
+        → provider call
+        → repository update
+        → database write
+        → provider invalidation
+        → UI refresh
+
+### Impact
+
+- allows correction and evolution of persisted data
+- maintains entity identity consistency
+
+---
+
+## Phase 0.3.3 Flow Extension — Delete
+
+Phase 0.3.3 introduces delete flows.
+
+### Delete flow
+
+    User action (delete)
+        → confirmation dialog
+        → provider call
+        → repository delete
+        → database removal
+        → provider invalidation
+        → UI refresh
+
+### Impact
+
+- completes CRUD lifecycle
+- ensures full entity lifecycle control
+
+---
+
+## Phase 0.3.4 Flow Extension — CRUD UX Minimum Layer
+
+Phase 0.3.4 introduces usability improvements on top of CRUD flows.
+
+### UX-enhanced flow
+
+    User action
+        → validation
+        → loading state
+        → operation execution
+        → success/error feedback
+        → UI update
+
+### Impact
+
+- reduces user error
+- improves clarity of operations
+- introduces minimum operational UX layer
+
+

@@ -6,7 +6,7 @@ The architecture described here corresponds to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.2.3 — Local Persistence Baseline
+- Phase 0.3.4 — CRUD UX Minimum Layer
 
 At this stage, the architecture is **inherited from Mi IP·RED**, with identity normalization applied, but without structural redesign.
 
@@ -741,3 +741,97 @@ That makes it another foundational architectural milestone:
 - low risk for inherited runtime stability
 - high value for future offline and CRUD evolution
 - clear layering between domain and data
+
+---
+
+## Phase 0.2.4 Architectural Extension — Web Persistence Support
+
+Phase 0.2.4 extends the persistence baseline to Web-compatible execution.
+
+This introduces:
+
+- platform-aware database initialization
+- WASM-compatible persistence handling
+- resolution of WebAssembly loading constraints
+- correction of seed concurrency issues
+
+Architectural impact:
+
+- persistence layer becomes multi-platform
+- no changes to runtime layer (ServiceProvider remains intact)
+- no change to domain layer boundaries
+
+---
+
+## Phase 0.3.1 Architectural Extension — Create
+
+Phase 0.3.1 introduces creation flows at the architectural level.
+
+This includes:
+
+- UI → provider → repository → database insert path
+- persistence-backed entity creation
+- provider invalidation after insert
+
+Architectural impact:
+
+- transition from read-only persistence to write capability
+- repository becomes bi-directional (read + write)
+- no changes to runtime orchestration
+
+---
+
+## Phase 0.3.2 Architectural Extension — Update
+
+Phase 0.3.2 introduces update flows.
+
+This includes:
+
+- UI edit mode → provider → repository → update
+- data preloading from persistence layer
+- preservation of entity identity
+
+Architectural impact:
+
+- full mutation capability over persisted entities
+- domain consistency enforced through repository layer
+- no changes to transport or runtime layers
+
+---
+
+## Phase 0.3.3 Architectural Extension — Delete
+
+Phase 0.3.3 introduces delete flows.
+
+This includes:
+
+- UI delete action → confirmation → repository delete
+- removal from persistence layer
+- list refresh via provider invalidation
+
+Architectural impact:
+
+- completes CRUD mutation capability
+- repository now supports full lifecycle operations
+- still no backend sync involved
+
+---
+
+## Phase 0.3.4 Architectural Extension — CRUD UX Minimum Layer
+
+Phase 0.3.4 introduces a usability layer on top of CRUD.
+
+This includes:
+
+- validation layer in presentation
+- feedback channels (success/error)
+- loading state handling
+- empty state normalization
+
+Architectural impact:
+
+- improves interaction reliability
+- does not introduce new layers
+- maintains strict separation of concerns
+
+

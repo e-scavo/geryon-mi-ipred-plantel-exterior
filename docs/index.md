@@ -10,7 +10,7 @@ The documentation set is **cumulative, incremental, and strictly aligned with th
 
 - Stage: **Stage 0 — Technical Bootstrap**
 - Phase: **Phase 0 — Technical Bootstrap**
-- Active subphase: **Phase 0.2.3 — Local Persistence Baseline**
+- Active subphase: **Phase 0.3.4 — CRUD UX Minimum Layer**
 
 ---
 
@@ -417,3 +417,164 @@ Instead:
 - Phase 0.2.3 becomes the persistence baseline
 
 All of them must be read cumulatively as part of the same bootstrap sequence.
+
+---
+
+## Phase 0.2.4 documentation update
+
+Phase 0.2.4 extends the persistence baseline to Web-compatible execution.
+
+This means the documentation set must now explicitly cover:
+
+- platform-aware database initialization
+- web persistence enablement
+- WASM-related runtime adjustments
+- concurrency control in seed initialization
+- the fact that persistence is now expected to behave consistently across Web and Android
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase0_2_4_web_persistence_support.md
+
+### Documentation continuity rule
+
+Phase 0.2.4 does not invalidate any earlier phase.
+
+Instead:
+
+- Phase 0.1 remains the technical controlled-clone baseline
+- Phase 0.2.1 remains the visible Plantel Exterior shell phase
+- Phase 0.2.2 remains the domain-model baseline
+- Phase 0.2.3 remains the local persistence baseline
+- Phase 0.2.4 becomes the web persistence extension of that baseline
+
+All of them must be read cumulatively as part of the same bootstrap sequence.
+
+---
+
+## Phase 0.3.1 documentation update
+
+Phase 0.3.1 introduces the first real create operations for the outside-plant domain.
+
+This means the documentation set must now explicitly cover:
+
+- creation forms for Caja PON / ONT
+- creation forms for Botella de Empalme
+- repository-backed insert operations
+- provider invalidation after successful creation
+- the transition from persistence-backed viewing to real domain creation
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase_0_3_1_create.md
+
+### Documentation continuity rule
+
+Phase 0.3.1 does not invalidate any earlier phase.
+
+Instead:
+
+- the technical bootstrap baseline remains valid
+- the shell/navigation baseline remains valid
+- the domain baseline remains valid
+- the persistence baseline remains valid
+- Phase 0.3.1 becomes the first operational CRUD phase
+
+All of them must be read cumulatively as part of the same repository history.
+
+---
+
+## Phase 0.3.2 documentation update
+
+Phase 0.3.2 introduces real update operations for the outside-plant domain.
+
+This means the documentation set must now explicitly cover:
+
+- edit-mode reuse of creation forms
+- data preloading for existing entities
+- persistent update behavior
+- timestamp continuity and entity identity preservation
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase_0_3_2_update.md
+
+### Documentation continuity rule
+
+Phase 0.3.2 does not invalidate any earlier phase.
+
+Instead:
+
+- all technical and persistence baselines remain valid
+- Phase 0.3.1 remains the create baseline
+- Phase 0.3.2 becomes the update baseline
+
+Both must coexist as cumulative CRUD history.
+
+---
+
+## Phase 0.3.3 documentation update
+
+Phase 0.3.3 introduces real delete operations for the outside-plant domain.
+
+This means the documentation set must now explicitly cover:
+
+- delete operations in the repository
+- confirmation dialogs in UI
+- persistent removal of entities
+- list refresh after deletion
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase_0_3_3_delete.md
+
+### Documentation continuity rule
+
+Phase 0.3.3 does not invalidate any earlier phase.
+
+Instead:
+
+- previous phases remain valid
+- Phase 0.3.3 completes the CRUD baseline over local persistence
+
+All of them must be read cumulatively.
+
+---
+
+## Phase 0.3.4 documentation update
+
+Phase 0.3.4 adds the first minimum usability layer on top of the CRUD baseline.
+
+This means the documentation set must now explicitly cover:
+
+- form validation improvements
+- better feedback for success/error states
+- loading state handling
+- improved empty states
+- minimum operational UX expectations for local CRUD flows
+
+### New phase document
+
+The dedicated document for this phase is:
+
+    docs/phase_0_3_4_crud_ux.md
+
+### Documentation continuity rule
+
+Phase 0.3.4 does not invalidate any earlier phase.
+
+Instead:
+
+- all prior bootstrap, domain, persistence, and CRUD documents remain valid
+- Phase 0.3.4 becomes the minimum UX layer over the local CRUD stack
+
+All of them must be read cumulatively before moving into backend synchronization.
+

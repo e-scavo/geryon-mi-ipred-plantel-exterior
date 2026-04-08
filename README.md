@@ -23,7 +23,7 @@ The goal of the current bootstrap stage is to establish a **controlled clone** w
 - Technical package name: `mi_ipred_plantel_exterior`
 - Android applicationId / namespace: `com.geryon.mi_ipred_plantel_exterior`
 - Product status: **Stage 0 / Technical Bootstrap**
-- Active subphase: **Phase 0.2.3 — Local Persistence Baseline**
+- Active subphase: **Phase 0.3.4 — CRUD UX Minimum Layer**
 - Current targets:
   - Web
   - Android
@@ -69,11 +69,25 @@ The repository is currently in:
 - **Stage 0 — Technical Bootstrap**
 - **Phase 0 — Technical Bootstrap**
 - **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
+- **Phase 0.2.2 — Domain Modeling & Contracts Baseline**
+- **Phase 0.2.3 — Local Persistence Baseline**
+- **Phase 0.2.4 — Web Persistence Support**
+- **Phase 0.3.1 — Create**
+- **Phase 0.3.2 — Update**
+- **Phase 0.3.3 — Delete**
+- **Phase 0.3.4 — CRUD UX Minimum Layer**
 
 The Stage 0 sequence is cumulative:
 
 - **Phase 0.1 — Controlled Clone & Technical Identity Baseline**
 - **Phase 0.2.1 — Domain Skeleton & Navigation Entry**
+- **Phase 0.2.2 — Domain Modeling & Contracts Baseline**
+- **Phase 0.2.3 — Local Persistence Baseline**
+- **Phase 0.2.4 — Web Persistence Support**
+- **Phase 0.3.1 — Create**
+- **Phase 0.3.2 — Update**
+- **Phase 0.3.3 — Delete**
+- **Phase 0.3.4 — CRUD UX Minimum Layer**
 
 Phase 0.1 established the safe technical baseline for the new product by:
 
@@ -591,3 +605,98 @@ Current expected behavior is:
             → Botellas de Empalme (loaded from local repository)
 
 This makes Phase 0.2.3 the first persistence-backed baseline for future outside-plant operations work.
+
+
+---
+
+## Phase 0.2.4 — Web Persistence Support
+
+Phase 0.2.4 extends the local persistence baseline to Web environments.
+
+This includes:
+
+- Web-compatible database initialization
+- WASM support configuration
+- resolution of WebAssembly loading issues (MIME type and worker)
+- concurrency fixes in seed initialization
+
+Result:
+
+- persistence is now consistent across:
+  - Android
+  - Desktop
+  - Web
+
+---
+
+## Phase 0.3.1 — Create
+
+Phase 0.3.1 introduces real entity creation flows.
+
+This includes:
+
+- creation forms for:
+  - Caja PON / ONT
+  - Botella de Empalme
+- persistent insert operations via repository
+- provider invalidation after creation
+
+Result:
+
+- entities can be created from real UI flows
+- system transitions from read-only to operational
+
+---
+
+## Phase 0.3.2 — Update
+
+Phase 0.3.2 introduces editing capabilities.
+
+This includes:
+
+- reuse of creation forms in edit mode
+- preloading of entity data
+- persistent update operations
+- preservation of entity identity and timestamps
+
+Result:
+
+- entities can be modified safely
+- system supports correction of field data
+
+---
+
+## Phase 0.3.3 — Delete
+
+Phase 0.3.3 completes the CRUD baseline.
+
+This includes:
+
+- delete operations in repository
+- confirmation dialogs before deletion
+- UI refresh after delete
+
+Result:
+
+- full CRUD support over persistent storage
+
+---
+
+## Phase 0.3.4 — CRUD UX Minimum Layer
+
+Phase 0.3.4 introduces a minimum usability layer on top of the CRUD system.
+
+This includes:
+
+- form validation improvements
+- error feedback surfaced in UI
+- loading states during operations
+- success feedback via SnackBars
+- improved empty states
+- consistent delete feedback
+
+Result:
+
+- system becomes operationally usable
+- reduces input errors
+- improves interaction flow
