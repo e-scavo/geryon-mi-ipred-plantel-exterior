@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/services/outside_plant_sync_service.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/local/app_database.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/repositories/drift_outside_plant_repository.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/repositories/drift_outside_plant_sync_repository.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 
@@ -21,6 +23,24 @@ final outsidePlantRepositoryProvider =
   return DriftOutsidePlantRepository(database);
 });
 
+final outsidePlantSyncRepositoryProvider =
+    Provider<DriftOutsidePlantSyncRepository>((ref) {
+  final database = ref.watch(plantelExteriorDatabaseProvider);
+  return DriftOutsidePlantSyncRepository(database);
+});
+
+final outsidePlantSyncServiceProvider = Provider<OutsidePlantSyncService>((ref) {
+  final database = ref.watch(plantelExteriorDatabaseProvider);
+  final repository = ref.watch(outsidePlantRepositoryProvider);
+  final syncRepository = ref.watch(outsidePlantSyncRepositoryProvider);
+
+  return OutsidePlantSyncService(
+    db: database,
+    repository: repository,
+    syncRepository: syncRepository,
+  );
+});
+
 final cajasPonOntListProvider = FutureProvider<List<CajaPonOnt>>((ref) async {
   final repository = ref.watch(outsidePlantRepositoryProvider);
   await repository.ensureSeedData();
@@ -32,4 +52,9 @@ final botellasEmpalmeListProvider =
   final repository = ref.watch(outsidePlantRepositoryProvider);
   await repository.ensureSeedData();
   return repository.getBotellasEmpalme();
+});
+
+final outsidePlantPendingSyncCountProvider = FutureProvider<int>((ref) async {
+  final repository = ref.watch(outsidePlantSyncRepositoryProvider);
+  return repository.getPendingItemsCount();
 });

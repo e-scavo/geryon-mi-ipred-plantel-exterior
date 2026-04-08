@@ -12,7 +12,7 @@ The content is cumulative and aligned strictly with the real repository (ZIP as 
 
 - Stage: Stage 0 — Technical Bootstrap
 - Phase: Phase 0 — Technical Bootstrap
-- Subphase: Phase 0.3.4 — CRUD UX Minimum Layer
+- Subphase: Phase 0.4.1 — Sync Foundations
 
 ---
 
@@ -920,3 +920,50 @@ Project decisions now establish:
 
 The system is now ready for backend synchronization phases.
 
+
+
+---
+
+### 18. Synchronization Foundation Strategy
+
+Phase 0.4.1 must prepare synchronization without introducing real backend transport behavior yet.
+
+Rules:
+
+- keep local DB as operational source of truth
+- introduce explicit local queue for pending synchronization
+- avoid inventing backend payload contracts
+- keep synchronization orchestration outside widgets
+- keep global runtime ownership unchanged
+
+---
+
+### 19. Module Sync Boundary
+
+The outside-plant module now has a dedicated sync boundary.
+
+Current contract:
+
+    OutsidePlantSyncContract
+
+Rule:
+
+- queue persistence and queue-state mutations must go through this boundary
+- UI must not write queue rows directly
+
+---
+
+### 20. Delete Trace Policy in 0.4.1
+
+In this subphase, delete operations must leave a synchronization trace before local removal.
+
+Rule:
+
+- capture queue tombstone first
+- remove local row after trace is stored
+
+Reason:
+
+- preserve future push intent
+- avoid forcing speculative backend modeling
+- avoid expanding table semantics prematurely in the same controlled subphase

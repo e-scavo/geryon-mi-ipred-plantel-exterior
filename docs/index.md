@@ -578,3 +578,23 @@ Instead:
 
 All of them must be read cumulatively before moving into backend synchronization.
 
+
+
+---
+
+## Phase 0.4.1 Additions
+
+The repository now includes the first synchronization foundation for the outside-plant module.
+
+New implementation scope added in this subphase:
+
+- local sync queue persisted in Drift database lifecycle through custom migration SQL
+- sync repository contract dedicated to queue persistence and future transport decoupling
+- feature sync service responsible for coordinating local CRUD plus queue trace generation
+- create/update snapshot capture for Caja PON / ONT and Botella de Empalme
+- delete tombstone capture before local removal
+- pending queue count provider for future UX and runtime visibility
+
+New phase document:
+
+- `docs/phase_0_4_1_sync_foundations.md`

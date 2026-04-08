@@ -835,3 +835,61 @@ Architectural impact:
 - maintains strict separation of concerns
 
 
+
+
+---
+
+## Phase 0.4.1 — Synchronization Foundation Layer
+
+The outside-plant module now adds a dedicated synchronization preparation layer without changing the global runtime owner.
+
+### Added module pieces
+
+- `OutsidePlantSyncContract`
+- `DriftOutsidePlantSyncRepository`
+- `OutsidePlantSyncService`
+- entity snapshot mappers for local queue payload generation
+- queue-backed migration in `PlantelExteriorDatabase`
+
+### Ownership model in 0.4.1
+
+`ServiceProvider` remains the global runtime owner.
+
+The outside-plant feature introduces a **feature-scoped orchestration layer** so that synchronization concerns do not get pushed into UI widgets and do not require a bootstrap redesign.
+
+Flow of ownership for local mutations:
+
+- UI form / UI action
+- Riverpod mutation provider
+- `OutsidePlantSyncService`
+- local repository + local sync repository
+- Drift database
+
+### Current persistence strategy for sync preparation
+
+The authoritative operational state remains the entity tables:
+
+- `cajas_pon_ont`
+- `botellas_empalme`
+
+The new queue table is auxiliary and records pending synchronization intent:
+
+- `outside_plant_sync_queue`
+
+This queue is append-oriented in 0.4.1 and stores:
+
+- entity type
+- entity id
+- operation type
+- local JSON snapshot / tombstone payload
+- queue status
+- retry/error metadata
+- timestamps
+
+### Why delete is traced before local removal
+
+The inherited CRUD baseline already used physical delete.
+
+To keep 0.4.1 controlled and avoid destabilizing the current domain tables before backend contracts are known, the implementation records a delete tombstone in the queue first and only then removes the row locally.
+
+This preserves future push intent without forcing an early redesign of entity storage semantics in the same subphase.

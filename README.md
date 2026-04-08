@@ -23,7 +23,7 @@ The goal of the current bootstrap stage is to establish a **controlled clone** w
 - Technical package name: `mi_ipred_plantel_exterior`
 - Android applicationId / namespace: `com.geryon.mi_ipred_plantel_exterior`
 - Product status: **Stage 0 / Technical Bootstrap**
-- Active subphase: **Phase 0.3.4 — CRUD UX Minimum Layer**
+- Active subphase: **Phase 0.4.1 — Sync Foundations**
 - Current targets:
   - Web
   - Android
@@ -76,6 +76,7 @@ The repository is currently in:
 - **Phase 0.3.2 — Update**
 - **Phase 0.3.3 — Delete**
 - **Phase 0.3.4 — CRUD UX Minimum Layer**
+- **Phase 0.4.1 — Sync Foundations**
 
 The Stage 0 sequence is cumulative:
 
@@ -88,6 +89,7 @@ The Stage 0 sequence is cumulative:
 - **Phase 0.3.2 — Update**
 - **Phase 0.3.3 — Delete**
 - **Phase 0.3.4 — CRUD UX Minimum Layer**
+- **Phase 0.4.1 — Sync Foundations**
 
 Phase 0.1 established the safe technical baseline for the new product by:
 
@@ -700,3 +702,31 @@ Result:
 - system becomes operationally usable
 - reduces input errors
 - improves interaction flow
+
+
+---
+
+## Phase 0.4.1 — Sync Foundations
+
+Phase 0.4.1 starts the backend-synchronization stage without connecting the module to the real backend yet.
+
+This subphase introduces the minimum structural layer required to preserve the current local-first baseline while preparing future convergence:
+
+- explicit local sync queue (`outside_plant_sync_queue`)
+- sync contract for the module
+- feature-level sync service/orchestrator
+- local mutation tracing for create / update / delete
+- snapshot payload capture for future push synchronization
+- pending sync count provider for future UX surfacing
+
+The operational source of truth remains the local Drift database.
+
+At this point the project still does **not** include:
+
+- real backend push execution
+- remote pull refresh
+- conflict resolution
+- advanced retry UX
+- hardening / queue compaction
+
+Delete operations are now traced through queue tombstones before local removal so that Phase 0.4.2 can work on real push behavior without inventing remote payloads in advance.

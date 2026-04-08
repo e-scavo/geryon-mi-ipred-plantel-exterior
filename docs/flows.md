@@ -6,7 +6,7 @@ The flows described here correspond to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.3.4 — CRUD UX Minimum Layer
+- Phase 0.4.1 — Sync Foundations
 
 At this stage, flows are inherited from Mi IP·RED and must be preserved without functional redesign.
 
@@ -776,3 +776,40 @@ Phase 0.3.4 introduces usability improvements on top of CRUD flows.
 - introduces minimum operational UX layer
 
 
+
+
+---
+
+## 10. Outside-Plant Local Mutation + Sync Trace Flow
+
+Phase 0.4.1 adds a new module-level flow for outside-plant entities.
+
+### Create / Update
+
+    User submits form
+        → form validation
+        → Riverpod mutation provider
+        → OutsidePlantSyncService
+        → persist entity locally
+        → capture local snapshot JSON
+        → enqueue pending sync item
+        → invalidate list providers
+        → UI rebuild from local DB
+
+### Delete
+
+    User confirms delete
+        → Riverpod mutation provider
+        → OutsidePlantSyncService
+        → capture delete tombstone JSON
+        → enqueue pending sync item
+        → delete entity locally
+        → invalidate list providers
+        → UI rebuild from local DB
+
+Characteristics:
+
+- local-first behavior preserved
+- no direct widget/backend coupling
+- no speculative remote payload contract
+- queue remains local and transport-agnostic
