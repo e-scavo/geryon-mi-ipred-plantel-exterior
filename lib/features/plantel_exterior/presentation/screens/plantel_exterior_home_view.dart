@@ -31,7 +31,7 @@ class PlantelExteriorHomeView extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.4.2 incorpora el pipeline de push local→remoto del módulo sin romper el enfoque local-first. La cola local sigue siendo la fuente de trabajo y el adapter remoto queda preparado para conectarse al backend real cuando se modele el contrato Go.',
+                'Phase 0.4.3 agrega el pipeline de pull remoto→local con reconciliación básica. La base local sigue siendo la fuente operativa, la cola sigue siendo el workload de push y el refresh remoto no pisa registros locales con cambios pendientes.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -77,52 +77,101 @@ class PlantelExteriorHomeView extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Push sync controlado',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Este disparador ejecuta un ciclo secuencial sobre la outbox local. En esta subfase todavía no existe contrato backend real conectado, por lo que el resultado esperado es útil para verificar pipeline y manejo de errores, no para convergencia productiva.',
-                                  style: theme.textTheme.bodyMedium,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          FilledButton.icon(
-                            onPressed: () async {
-                              ref.invalidate(runOutsidePlantPushSyncProvider);
-                              final messenger = ScaffoldMessenger.of(context);
-                              final result = await ref.read(
-                                runOutsidePlantPushSyncProvider.future,
-                              );
+                      Text(
+                        'Push sync controlado',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Este disparador ejecuta un ciclo secuencial sobre la outbox local. Mientras no exista contrato backend real, el resultado sirve para validar pipeline y manejo de errores del módulo.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: isCompact
+                            ? Alignment.centerLeft
+                            : Alignment.centerRight,
+                        child: FilledButton.icon(
+                          onPressed: () async {
+                            ref.invalidate(runOutsidePlantPushSyncProvider);
+                            final messenger = ScaffoldMessenger.of(context);
+                            final result = await ref.read(
+                              runOutsidePlantPushSyncProvider.future,
+                            );
 
-                              if (!context.mounted) {
-                                return;
-                              }
+                            if (!context.mounted) {
+                              return;
+                            }
 
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Push ejecutado. Procesados: ${result.processedCount} | OK: ${result.successCount} | Error: ${result.errorCount}',
-                                  ),
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Push ejecutado. Procesados: ${result.processedCount} | OK: ${result.successCount} | Error: ${result.errorCount}',
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.sync),
-                            label: const Text('Intentar push'),
-                          ),
-                        ],
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.sync),
+                          label: const Text('Intentar push'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Card(
+                elevation: 2,
+                surfaceTintColor: theme.colorScheme.surface,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pull refresh controlado',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Este refresco trae estado remoto controlado y reconcilia solo registros locales sincronizados. Los registros locales en estado pending o error no son pisados automáticamente.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: isCompact
+                            ? Alignment.centerLeft
+                            : Alignment.centerRight,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            ref.invalidate(runOutsidePlantPullSyncProvider);
+                            final messenger = ScaffoldMessenger.of(context);
+                            final result = await ref.read(
+                              runOutsidePlantPullSyncProvider.future,
+                            );
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Pull ejecutado. Remotos: ${result.fetchedCount} | Insertados: ${result.insertedCount} | Actualizados: ${result.updatedCount} | Omitidos: ${result.skippedCount}',
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.cloud_download_outlined),
+                          label: const Text('Refrescar desde servidor'),
+                        ),
                       ),
                     ],
                   ),
@@ -161,7 +210,11 @@ class PlantelExteriorHomeView extends ConsumerWidget {
                       ),
                       _buildBullet(
                         context,
-                        'La etapa actual procesa push secuencial sin inventar todavía el contrato remoto definitivo.',
+                        'El pull solo refresca registros locales sincronizados; pending y error quedan preservados.',
+                      ),
+                      _buildBullet(
+                        context,
+                        'Los wrappers vacíos de listas siguen fuera de uso y quedan documentados para una fase UX posterior.',
                       ),
                       if (isCompact) const SizedBox(height: 6),
                     ],

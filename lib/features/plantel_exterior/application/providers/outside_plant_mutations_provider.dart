@@ -3,6 +3,7 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entit
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
 
+@Deprecated('Use presentation/providers/outside_plant_mutations_provider.dart')
 final createCajaPonOntProvider =
     FutureProvider.family<void, CajaPonOnt>((ref, caja) async {
   final repository = ref.read(outsidePlantRepositoryProvider);
@@ -10,6 +11,7 @@ final createCajaPonOntProvider =
   ref.invalidate(cajasPonOntListProvider);
 });
 
+@Deprecated('Use presentation/providers/outside_plant_mutations_provider.dart')
 final createBotellaEmpalmeProvider =
     FutureProvider.family<void, BotellaEmpalme>((ref, botella) async {
   final repository = ref.read(outsidePlantRepositoryProvider);

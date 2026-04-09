@@ -842,3 +842,32 @@ Characteristics:
 - remote adapter is isolated behind a dedicated boundary
 - push does not imply pull
 - push does not imply conflict resolution
+
+---
+
+## Phase 0.4.3 — Outside-Plant Pull Refresh Flow
+
+Phase 0.4.3 adds the remote refresh path with conservative local reconciliation.
+
+Conceptual flow:
+
+    UI technical trigger or future orchestrator
+        → pull processor starts cycle
+        → fetch remote cajas and botellas snapshots
+        → for each remote item:
+              → if local row does not exist:
+                    → insert locally as synced
+              → if local row exists and is synced:
+                    → update local row from remote snapshot
+              → if local row exists and is pending/error:
+                    → skip automatic overwrite
+        → invalidate list providers
+        → UI rebuild from local DB
+
+Characteristics:
+
+- local-first behavior is preserved
+- pull does not consume or replace the push queue
+- pull does not overwrite local work in progress
+- pull does not implement remote deletions yet
+

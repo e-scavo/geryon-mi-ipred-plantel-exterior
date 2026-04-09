@@ -615,3 +615,21 @@ Added or updated in this subphase:
 - mutation wiring corrections so CRUD flows always leave sync trace through the feature layer
 - minimal technical trigger on the module home to validate the push pipeline
 - `docs/phase_0_4_2_backend_push_sync.md`
+
+---
+
+## Phase 0.4.3 Additions
+
+This subphase adds the remote refresh side of the synchronization architecture already prepared by 0.4.1 and 0.4.2.
+
+Added or updated in this subphase:
+
+- module-level remote pull contract
+- remote pull stub repository
+- pull processor with local reconciliation rules
+- pull cycle result model
+- technical refresh trigger on the module home
+- deprecation marker on the legacy application/provider path
+- explicit note that `cajas_list_screen.dart` and `botellas_list_screen.dart` remain present but empty/out of use for now
+- `docs/phase_0_4_3_backend_pull_refresh.md`
+

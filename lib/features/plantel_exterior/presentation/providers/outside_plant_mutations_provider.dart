@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/models/outside_plant_pull_cycle_result.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/models/outside_plant_push_cycle_result.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
 
@@ -54,6 +55,17 @@ final runOutsidePlantPushSyncProvider =
   ref.invalidate(cajasPonOntListProvider);
   ref.invalidate(botellasEmpalmeListProvider);
   ref.invalidate(outsidePlantPendingSyncCountProvider);
+
+  return result;
+});
+
+final runOutsidePlantPullSyncProvider =
+    FutureProvider<OutsidePlantPullCycleResult>((ref) async {
+  final processor = ref.read(outsidePlantPullSyncProcessorProvider);
+  final result = await processor.runPullCycle();
+
+  ref.invalidate(cajasPonOntListProvider);
+  ref.invalidate(botellasEmpalmeListProvider);
 
   return result;
 });

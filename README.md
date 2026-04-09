@@ -730,3 +730,45 @@ At this point the project still does **not** include:
 - hardening / queue compaction
 
 Delete operations are now traced through queue tombstones before local removal so that Phase 0.4.2 can work on real push behavior without inventing remote payloads in advance.
+
+---
+
+## Phase 0.4.2 — Backend Push Sync
+
+Phase 0.4.2 adds the first active push cycle over the local synchronization queue.
+
+This subphase includes:
+
+- sequential push processor for queue items
+- remote sync boundary for future backend wiring
+- controlled stub adapter instead of speculative transport integration
+- sync-status normalization after successful create/update push
+- technical push trigger on the module home for validation
+
+Result:
+
+- the module can already execute a real push pipeline internally
+- backend transport remains decoupled and replaceable
+- local-first behavior remains unchanged
+
+---
+
+## Phase 0.4.3 — Backend Pull Refresh
+
+Phase 0.4.3 adds the complementary remote-to-local refresh pipeline without breaking the queue-driven push model.
+
+This subphase includes:
+
+- remote pull boundary dedicated to the module
+- controlled pull stub adapter with non-speculative behavior
+- pull processor with local reconciliation rules
+- local priority preservation for records in `pending` or `error`
+- technical refresh trigger on the module home
+- explicit documentation of residual placeholder screens and deprecated legacy provider path
+
+Result:
+
+- the module is now architecturally prepared for bidirectional synchronization
+- synchronized local rows can be refreshed from future remote state
+- pending local work is not overwritten by remote refresh
+

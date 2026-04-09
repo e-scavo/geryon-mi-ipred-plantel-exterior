@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/services/outside_plant_pull_sync_processor.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/services/outside_plant_push_sync_processor.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/application/services/outside_plant_sync_service.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/local/app_database.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/repositories/drift_outside_plant_repository.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/repositories/drift_outside_plant_sync_repository.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/repositories/outside_plant_remote_pull_stub_repository.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/repositories/outside_plant_remote_sync_stub_repository.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/contracts/outside_plant_remote_pull_contract.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/contracts/outside_plant_remote_sync_contract.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
@@ -37,6 +40,11 @@ final outsidePlantRemoteSyncRepositoryProvider =
   return const OutsidePlantRemoteSyncStubRepository();
 });
 
+final outsidePlantRemotePullRepositoryProvider =
+    Provider<OutsidePlantRemotePullContract>((ref) {
+  return const OutsidePlantRemotePullStubRepository();
+});
+
 final outsidePlantSyncServiceProvider =
     Provider<OutsidePlantSyncService>((ref) {
   final database = ref.watch(plantelExteriorDatabaseProvider);
@@ -62,6 +70,19 @@ final outsidePlantPushSyncProcessorProvider =
     repository: repository,
     syncRepository: syncRepository,
     remoteSyncRepository: remoteSyncRepository,
+  );
+});
+
+final outsidePlantPullSyncProcessorProvider =
+    Provider<OutsidePlantPullSyncProcessor>((ref) {
+  final repository = ref.watch(outsidePlantRepositoryProvider);
+  final remotePullRepository = ref.watch(
+    outsidePlantRemotePullRepositoryProvider,
+  );
+
+  return OutsidePlantPullSyncProcessor(
+    repository: repository,
+    remotePullRepository: remotePullRepository,
   );
 });
 

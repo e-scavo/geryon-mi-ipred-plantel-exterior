@@ -1001,3 +1001,55 @@ After 0.4.1 and 0.4.2, create/update/delete flows of the outside-plant module mu
 - local persistence remains centralized
 - sync queue trace is guaranteed
 - future push/pull semantics remain coherent
+
+---
+
+### 24. Pull Refresh Must Preserve Pending Local State
+
+Phase 0.4.3 introduces remote refresh, but this refresh must remain conservative.
+
+Rule:
+
+- remote data may update only local rows that are already `synced`
+- local rows in `pending` or `error` must not be overwritten automatically
+
+Reason:
+
+- preserve local-first ownership
+- avoid losing unsent local work
+- avoid fake conflict resolution before the real backend contract exists
+
+---
+
+### 25. Remote Pull Contract Must Be Non-Speculative
+
+The pull side of the module may introduce a dedicated remote boundary before the final Go structures are available.
+
+Rule:
+
+- use generic map-based snapshots for now
+- do not invent final backend DTOs or transport assumptions
+
+---
+
+### 26. Legacy Provider Path Must Be Marked, Not Removed Yet
+
+The old file under `application/providers/outside_plant_mutations_provider.dart` is no longer the active feature wiring.
+
+Rule:
+
+- mark it deprecated now
+- keep it in place until a later cleanup phase explicitly removes it
+
+---
+
+### 27. Empty Wrapper Screens Must Be Documented Explicitly
+
+The current project baseline still contains empty files for list wrappers under `presentation/screens/cajas` and `presentation/screens/botellas`.
+
+Rule:
+
+- do not silently ignore them
+- do not opportunistically delete them in a sync phase
+- document their placeholder status and defer cleanup/reuse to a later UI phase
+

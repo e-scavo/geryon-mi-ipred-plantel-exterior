@@ -932,3 +932,41 @@ At this stage the priority is:
 - low architectural risk
 
 Concurrency, queue compaction and retry hardening remain deferred.
+
+---
+
+## Phase 0.4.3 — Pull Refresh and Local Reconciliation Layer
+
+Phase 0.4.3 adds the remote-to-local refresh path on top of the local queue and push processor already introduced in 0.4.1 and 0.4.2.
+
+The resulting ownership model becomes:
+
+- UI: triggers technical refresh only
+- pull processor: requests remote snapshots through a dedicated boundary
+- repository: persists reconciled local state
+- local entity tables: remain the operational source of truth
+- pending queue: remains the push workload and is not replaced by pull
+
+### Reconciliation rule in 0.4.3
+
+Remote refresh is intentionally conservative.
+
+Rules:
+
+- if a remote row does not exist locally, it may be inserted as `synced`
+- if a local row exists as `synced`, it may be updated from remote data
+- if a local row exists as `pending`, it must not be overwritten automatically
+- if a local row exists as `error`, it must not be overwritten automatically
+- remote delete reconciliation is still out of scope in this phase
+
+### Legacy and placeholder notes
+
+The file `application/providers/outside_plant_mutations_provider.dart` is now explicitly marked as deprecated because the active module wiring already lives in `presentation/providers/...`.
+
+The files:
+
+- `presentation/screens/cajas/cajas_list_screen.dart`
+- `presentation/screens/botellas/botellas_list_screen.dart`
+
+remain present but empty and unused in the current baseline. They are preserved for controlled cleanup or reuse in a later UX-oriented phase instead of being removed opportunistically now.
+
