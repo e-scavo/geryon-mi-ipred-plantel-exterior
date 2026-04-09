@@ -650,3 +650,19 @@ Added or updated in this subphase:
 - sync visibility improvements on cajas and botellas screens
 - edit-form contextual sync note for existing rows
 - `docs/phase_0_4_4_sync_ux_baseline.md`
+
+
+---
+
+## Phase 0.4.5 Additions
+
+This subphase hardens the synchronization baseline already introduced in 0.4.1–0.4.4 without changing the local-first ownership model.
+
+Added or updated in this subphase:
+
+- removal of `runOutsidePlantPushSyncActionProvider` residual wiring
+- removal of `runOutsidePlantPullSyncActionProvider` residual wiring
+- stronger `outside_plant_sync_ui_provider.dart` execution guards
+- single-path manual execution retained in `outside_plant_sync_actions_card.dart`
+- refreshed module home wording to reflect hardening scope
+- `docs/phase_0_4_5_sync_hardening.md`

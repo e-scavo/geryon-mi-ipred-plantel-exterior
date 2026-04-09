@@ -1089,3 +1089,28 @@ Rule:
 - keep push and pull user-triggered
 - show clear feedback about recent execution
 - do not overstate the current backend readiness before real Go structures are wired
+
+
+---
+
+### 31. Residual Invalid Sync Action Providers Must Be Removed
+
+Once the active UI path was corrected in 0.4.4, leaving the old provider-based action wrappers in the codebase would preserve a dormant invalid pattern and invite regressions.
+
+Rule:
+
+- remove residual action providers that mutate sync UI state during provider execution
+- keep a single supported manual execution path
+- prefer deletion over deprecation when the residual code is already architecturally unsafe
+
+---
+
+### 32. Concurrency Guards Belong In The Sync UI Notifier
+
+Blocking duplicate or crossed manual sync actions is presentation behavior, but it should still be enforced centrally instead of only relying on disabled buttons.
+
+Rule:
+
+- let the sync UI notifier reject `startPush()` or `startPull()` when another execution is already active
+- keep buttons visually disabled as the first barrier
+- keep notifier guards as the second barrier so rapid interaction or future UI reuse cannot bypass the rule

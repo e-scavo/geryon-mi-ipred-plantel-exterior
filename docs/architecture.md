@@ -1001,3 +1001,35 @@ Therefore:
 - no queue compaction
 - no backend contract finalization
 - no deletion of residual placeholder screens or deprecated provider path during this phase
+
+
+---
+
+## Phase 0.4.5 — Synchronization Hardening Layer
+
+Phase 0.4.5 does not add a new synchronization capability. It removes residual invalid execution paths and hardens the only allowed presentation path for manual push/pull.
+
+### Hardening responsibilities introduced in 0.4.5
+
+- keep exactly one valid manual execution path for push and pull
+- remove residual FutureProvider-based action wrappers that previously mutated presentation state during execution
+- centralize concurrency guards inside the presentation sync-ui notifier
+- keep list invalidation and processor ownership unchanged
+
+### Architectural rule in 0.4.5
+
+Presentation actions may invoke processors, but they must not leave alternative provider-based command paths that mutate other providers during initialization.
+
+Therefore:
+
+- `runOutsidePlantPushSyncProvider` and `runOutsidePlantPullSyncProvider` remain as processor result providers
+- execution start/finish is coordinated from the widget plus notifier path only
+- the old residual action providers are removed instead of being left as dormant traps
+
+### Explicit non-goals preserved in 0.4.5
+
+- no backend Go contract integration yet
+- no queue compaction
+- no automatic retry scheduler
+- no opportunistic deletion of the deprecated application provider path
+- no cleanup of the still-empty wrapper list screens during this phase

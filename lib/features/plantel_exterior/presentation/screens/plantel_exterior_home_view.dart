@@ -32,7 +32,7 @@ class PlantelExteriorHomeView extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.4.4 consolida la baseline UX de sincronización del módulo: el trabajo sigue siendo local-first, pero ahora el estado de push/pull y los errores visibles quedan mejor comunicados para uso diario y validación controlada.',
+                'Phase 0.4.5 endurece la capa de sincronización ya visible del módulo: el trabajo sigue siendo local-first, pero ahora push/pull comparten un único camino de ejecución válido, sin wiring residual inseguro y con bloqueo explícito ante ejecuciones concurrentes.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -102,7 +102,7 @@ class PlantelExteriorHomeView extends ConsumerWidget {
                       ),
                       _buildBullet(
                         context,
-                        'La ejecución de push y pull sigue siendo manual y controlada, con feedback UX mínimo consistente.',
+                        'La ejecución de push y pull sigue siendo manual y controlada, ahora con una única ruta válida y bloqueo explícito frente a concurrencia indebida.',
                       ),
                       _buildBullet(
                         context,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/models/outside_plant_pull_cycle_result.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/models/outside_plant_push_cycle_result.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_sync_ui_provider.dart';
 
@@ -11,7 +13,7 @@ class OutsidePlantSyncActionsCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final bool isCompact = MediaQuery.of(context).size.width < 700;
     final syncUiState = ref.watch(outsidePlantSyncUiProvider);
-    final bool isBusy = syncUiState.isPushRunning || syncUiState.isPullRunning;
+    final bool isBusy = syncUiState.isBusy;
 
     return Card(
       elevation: 2,
@@ -39,48 +41,7 @@ class OutsidePlantSyncActionsCard extends ConsumerWidget {
               alignment: isCompact ? WrapAlignment.start : WrapAlignment.end,
               children: [
                 FilledButton.icon(
-                  onPressed: isBusy
-                      ? null
-                      : () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          final syncUiNotifier =
-                              ref.read(outsidePlantSyncUiProvider.notifier);
-
-                          syncUiNotifier.startPush();
-
-                          try {
-                            final result = await ref.refresh(
-                              runOutsidePlantPushSyncProvider.future,
-                            );
-
-                            syncUiNotifier.completePush(result);
-
-                            if (!context.mounted) {
-                              return;
-                            }
-
-                            messenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Push ejecutado. Procesados: ${result.processedCount} | OK: ${result.successCount} | Error: ${result.errorCount}',
-                                ),
-                              ),
-                            );
-                          } catch (error) {
-                            syncUiNotifier.failPush(error);
-
-                            if (!context.mounted) {
-                              return;
-                            }
-
-                            messenger.showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Push falló. ${error.toString()}'),
-                              ),
-                            );
-                          }
-                        },
+                  onPressed: isBusy ? null : () => _runPush(context, ref),
                   icon: syncUiState.isPushRunning
                       ? const SizedBox(
                           width: 18,
@@ -95,48 +56,7 @@ class OutsidePlantSyncActionsCard extends ConsumerWidget {
                   ),
                 ),
                 OutlinedButton.icon(
-                  onPressed: isBusy
-                      ? null
-                      : () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          final syncUiNotifier =
-                              ref.read(outsidePlantSyncUiProvider.notifier);
-
-                          syncUiNotifier.startPull();
-
-                          try {
-                            final result = await ref.refresh(
-                              runOutsidePlantPullSyncProvider.future,
-                            );
-
-                            syncUiNotifier.completePull(result);
-
-                            if (!context.mounted) {
-                              return;
-                            }
-
-                            messenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Pull ejecutado. Remotos: ${result.fetchedCount} | Insertados: ${result.insertedCount} | Actualizados: ${result.updatedCount} | Omitidos: ${result.skippedCount}',
-                                ),
-                              ),
-                            );
-                          } catch (error) {
-                            syncUiNotifier.failPull(error);
-
-                            if (!context.mounted) {
-                              return;
-                            }
-
-                            messenger.showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Pull falló. ${error.toString()}'),
-                              ),
-                            );
-                          }
-                        },
+                  onPressed: isBusy ? null : () => _runPull(context, ref),
                   icon: syncUiState.isPullRunning
                       ? const SizedBox(
                           width: 18,
@@ -156,5 +76,93 @@ class OutsidePlantSyncActionsCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _runPush(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final syncUiNotifier = ref.read(outsidePlantSyncUiProvider.notifier);
+
+    if (!syncUiNotifier.startPush()) {
+      _showSnackBar(
+        messenger,
+        'Ya existe una sincronización en curso. Esperá a que termine antes de ejecutar un push.',
+      );
+      return;
+    }
+
+    try {
+      final OutsidePlantPushCycleResult result =
+          await ref.refresh(runOutsidePlantPushSyncProvider.future);
+      syncUiNotifier.completePush(result);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      _showSnackBar(
+        messenger,
+        'Push ejecutado. Procesados: ${result.processedCount} | OK: ${result.successCount} | Error: ${result.errorCount}',
+      );
+    } catch (error) {
+      syncUiNotifier.failPush(error);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      _showSnackBar(
+        messenger,
+        'Push falló. ${error.toString()}',
+      );
+    }
+  }
+
+  Future<void> _runPull(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final syncUiNotifier = ref.read(outsidePlantSyncUiProvider.notifier);
+
+    if (!syncUiNotifier.startPull()) {
+      _showSnackBar(
+        messenger,
+        'Ya existe una sincronización en curso. Esperá a que termine antes de ejecutar un pull.',
+      );
+      return;
+    }
+
+    try {
+      final OutsidePlantPullCycleResult result =
+          await ref.refresh(runOutsidePlantPullSyncProvider.future);
+      syncUiNotifier.completePull(result);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      _showSnackBar(
+        messenger,
+        'Pull ejecutado. Remotos: ${result.fetchedCount} | Insertados: ${result.insertedCount} | Actualizados: ${result.updatedCount} | Omitidos: ${result.skippedCount}',
+      );
+    } catch (error) {
+      syncUiNotifier.failPull(error);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      _showSnackBar(
+        messenger,
+        'Pull falló. ${error.toString()}',
+      );
+    }
+  }
+
+  void _showSnackBar(ScaffoldMessengerState messenger, String message) {
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+        ),
+      );
   }
 }

@@ -893,3 +893,28 @@ Characteristics:
 - UX state is ephemeral and presentation-scoped
 - list cards surface `pending`, `synced` and `error` more clearly
 - edit forms explain why a saved row returns to `pending`
+
+
+---
+
+## Phase 0.4.5 — Synchronization Hardening Flow
+
+Phase 0.4.5 keeps the same visible push/pull controls from 0.4.4 but reduces the execution flow to a single hardened path.
+
+Conceptual flow:
+
+    user presses push or pull action
+        → sync-ui notifier checks whether another execution is already running
+        → if busy: action is rejected and a short UX message is shown
+        → if allowed: notifier marks the selected action as running
+        → existing processor runs
+        → list and counter providers are invalidated
+        → notifier stores the final summary or error
+        → home widgets rebuild from local state + presentation summaries
+
+Characteristics:
+
+- no alternative provider-based action path remains
+- push and pull cannot be started concurrently from the supported UX path
+- durable local-first behavior remains unchanged
+- hardening is additive and does not invent backend contracts

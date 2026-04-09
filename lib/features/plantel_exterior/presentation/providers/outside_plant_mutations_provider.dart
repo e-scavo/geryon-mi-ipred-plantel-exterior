@@ -4,7 +4,6 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entit
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/models/outside_plant_pull_cycle_result.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/models/outside_plant_push_cycle_result.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_sync_ui_provider.dart';
 
 final saveCajaPonOntProvider =
     FutureProvider.family<void, ({CajaPonOnt caja, bool isEditMode})>(
@@ -60,21 +59,6 @@ final runOutsidePlantPushSyncProvider =
   return result;
 });
 
-final runOutsidePlantPushSyncActionProvider =
-    FutureProvider<String>((ref) async {
-  final syncUiNotifier = ref.read(outsidePlantSyncUiProvider.notifier);
-  syncUiNotifier.startPush();
-
-  try {
-    final result = await ref.refresh(runOutsidePlantPushSyncProvider.future);
-    syncUiNotifier.completePush(result);
-    return 'Push ejecutado. Procesados: ${result.processedCount} | OK: ${result.successCount} | Error: ${result.errorCount}';
-  } catch (error) {
-    syncUiNotifier.failPush(error);
-    rethrow;
-  }
-});
-
 final runOutsidePlantPullSyncProvider =
     FutureProvider<OutsidePlantPullCycleResult>((ref) async {
   final processor = ref.read(outsidePlantPullSyncProcessorProvider);
@@ -82,21 +66,7 @@ final runOutsidePlantPullSyncProvider =
 
   ref.invalidate(cajasPonOntListProvider);
   ref.invalidate(botellasEmpalmeListProvider);
+  ref.invalidate(outsidePlantPendingSyncCountProvider);
 
   return result;
-});
-
-final runOutsidePlantPullSyncActionProvider =
-    FutureProvider<String>((ref) async {
-  final syncUiNotifier = ref.read(outsidePlantSyncUiProvider.notifier);
-  syncUiNotifier.startPull();
-
-  try {
-    final result = await ref.refresh(runOutsidePlantPullSyncProvider.future);
-    syncUiNotifier.completePull(result);
-    return 'Pull ejecutado. Remotos: ${result.fetchedCount} | Insertados: ${result.insertedCount} | Actualizados: ${result.updatedCount} | Omitidos: ${result.skippedCount}';
-  } catch (error) {
-    syncUiNotifier.failPull(error);
-    rethrow;
-  }
 });

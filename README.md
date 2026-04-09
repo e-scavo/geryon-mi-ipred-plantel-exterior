@@ -793,3 +793,24 @@ Result:
 - synchronization becomes more understandable without changing the local-first architecture
 - the module home now communicates pending work, recent results and errors more clearly
 - push/pull remain controlled and manual, but no longer feel purely technical
+
+
+---
+
+## Phase 0.4.5 — Sync Hardening
+
+Phase 0.4.5 closes the synchronization baseline introduced across 0.4.1–0.4.4 by removing residual invalid wiring and hardening the visible execution path.
+
+This subphase includes:
+
+- removal of residual Riverpod action providers that still mutated UI state during provider execution
+- a single valid manual execution path for push and pull
+- explicit concurrency blocking in the presentation sync UI notifier
+- normalized action-card behavior and snackbar feedback
+- cumulative documentation of what remains intentionally deferred
+
+Result:
+
+- push and pull keep their controlled manual behavior, but now with one hardened execution path
+- sync UI state is more predictable under rapid interaction
+- the module closes Phase 0.4 with less architectural residue and safer UX behavior

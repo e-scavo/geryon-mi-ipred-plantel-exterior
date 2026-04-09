@@ -17,6 +17,8 @@ class OutsidePlantSyncUiState {
     this.lastErrorMessage,
   });
 
+  bool get isBusy => isPushRunning || isPullRunning;
+
   OutsidePlantSyncUiState copyWith({
     bool? isPushRunning,
     bool? isPullRunning,
@@ -47,16 +49,31 @@ class OutsidePlantSyncUiNotifier
     extends StateNotifier<OutsidePlantSyncUiState> {
   OutsidePlantSyncUiNotifier() : super(const OutsidePlantSyncUiState());
 
-  void startPush() {
+  void clearTransientMessages() {
     state = state.copyWith(
-      isPushRunning: true,
+      clearLastPushSummary: true,
+      clearLastPullSummary: true,
       clearLastErrorMessage: true,
     );
+  }
+
+  bool startPush() {
+    if (state.isBusy) {
+      return false;
+    }
+
+    state = state.copyWith(
+      isPushRunning: true,
+      isPullRunning: false,
+      clearLastErrorMessage: true,
+    );
+    return true;
   }
 
   void completePush(OutsidePlantPushCycleResult result) {
     state = state.copyWith(
       isPushRunning: false,
+      isPullRunning: false,
       lastPushSummary:
           'Push ejecutado. Procesados: ${result.processedCount} | OK: ${result.successCount} | Error: ${result.errorCount}',
       lastErrorMessage:
@@ -68,20 +85,28 @@ class OutsidePlantSyncUiNotifier
   void failPush(Object error) {
     state = state.copyWith(
       isPushRunning: false,
+      isPullRunning: false,
       lastErrorMessage: 'Push falló. ${error.toString()}',
     );
   }
 
-  void startPull() {
+  bool startPull() {
+    if (state.isBusy) {
+      return false;
+    }
+
     state = state.copyWith(
       isPullRunning: true,
+      isPushRunning: false,
       clearLastErrorMessage: true,
     );
+    return true;
   }
 
   void completePull(OutsidePlantPullCycleResult result) {
     state = state.copyWith(
       isPullRunning: false,
+      isPushRunning: false,
       lastPullSummary:
           'Pull ejecutado. Remotos: ${result.fetchedCount} | Insertados: ${result.insertedCount} | Actualizados: ${result.updatedCount} | Omitidos: ${result.skippedCount}',
       lastErrorMessage:
@@ -93,6 +118,7 @@ class OutsidePlantSyncUiNotifier
   void failPull(Object error) {
     state = state.copyWith(
       isPullRunning: false,
+      isPushRunning: false,
       lastErrorMessage: 'Pull falló. ${error.toString()}',
     );
   }
