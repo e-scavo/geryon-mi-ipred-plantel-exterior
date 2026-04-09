@@ -6,7 +6,7 @@ The flows described here correspond to:
 
 - Stage 0 — Technical Bootstrap
 - Phase 0 — Technical Bootstrap
-- Phase 0.4.1 — Sync Foundations
+- Phase 0.4.2 — Backend Push Sync
 
 At this stage, flows are inherited from Mi IP·RED and must be preserved without functional redesign.
 
@@ -813,3 +813,32 @@ Characteristics:
 - no direct widget/backend coupling
 - no speculative remote payload contract
 - queue remains local and transport-agnostic
+
+---
+
+## Phase 0.4.2 — Outside-Plant Push Flow
+
+Phase 0.4.2 adds the first active synchronization cycle for the module.
+
+Conceptual flow:
+
+    UI technical trigger or future orchestrator
+        → push processor starts cycle
+        → read pending/error queue items
+        → mark item as processing
+        → dispatch by entity type + operation type
+        → invoke remote sync contract
+        → if success:
+              → mark local entity as synced when applicable
+              → remove queue item
+        → if error:
+              → persist error in queue
+              → keep item available for future retry
+
+Characteristics:
+
+- local database remains the authoritative operational state
+- queue is the authoritative synchronization workload
+- remote adapter is isolated behind a dedicated boundary
+- push does not imply pull
+- push does not imply conflict resolution

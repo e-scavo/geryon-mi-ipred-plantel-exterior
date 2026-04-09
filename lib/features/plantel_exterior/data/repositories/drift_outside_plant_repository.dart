@@ -123,4 +123,28 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
       ..where((tbl) => tbl.id.equals(id.value));
     await query.go();
   }
+
+  @override
+  Future<void> markCajaPonOntSynced(OutsidePlantId id) async {
+    final query = db.update(db.cajasPonOntTable)
+      ..where((tbl) => tbl.id.equals(id.value));
+    await query.write(
+      CajasPonOntTableCompanion(
+        syncStatus: const Value('synced'),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  @override
+  Future<void> markBotellaEmpalmeSynced(OutsidePlantId id) async {
+    final query = db.update(db.botellasEmpalmeTable)
+      ..where((tbl) => tbl.id.equals(id.value));
+    await query.write(
+      BotellasEmpalmeTableCompanion(
+        syncStatus: const Value('synced'),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
 }

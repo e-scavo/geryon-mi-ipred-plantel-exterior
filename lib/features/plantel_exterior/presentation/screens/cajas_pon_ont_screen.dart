@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/cajas/caja_form_screen.dart';
 
@@ -72,9 +73,7 @@ class CajasPonOntScreen extends ConsumerWidget {
     }
 
     try {
-      final repository = ref.read(outsidePlantRepositoryProvider);
-      await repository.deleteCajaPonOnt(caja.id);
-      ref.invalidate(cajasPonOntListProvider);
+      await ref.read(deleteCajaPonOntProvider(caja).future);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

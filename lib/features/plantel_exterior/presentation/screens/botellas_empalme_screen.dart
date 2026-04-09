@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/botellas/botella_form_screen.dart';
 
@@ -72,9 +73,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
     }
 
     try {
-      final repository = ref.read(outsidePlantRepositoryProvider);
-      await repository.deleteBotellaEmpalme(botella.id);
-      ref.invalidate(botellasEmpalmeListProvider);
+      await ref.read(deleteBotellaEmpalmeProvider(botella).future);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

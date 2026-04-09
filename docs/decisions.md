@@ -12,7 +12,7 @@ The content is cumulative and aligned strictly with the real repository (ZIP as 
 
 - Stage: Stage 0 — Technical Bootstrap
 - Phase: Phase 0 — Technical Bootstrap
-- Subphase: Phase 0.4.1 — Sync Foundations
+- Subphase: Phase 0.4.2 — Backend Push Sync
 
 ---
 
@@ -967,3 +967,37 @@ Reason:
 - preserve future push intent
 - avoid forcing speculative backend modeling
 - avoid expanding table semantics prematurely in the same controlled subphase
+
+---
+
+### 21. Push Processor Must Exist Before Real Backend Wiring
+
+Phase 0.4.2 must complete the queue-processing architecture even if the real backend contract is not yet available.
+
+Reason:
+
+- the module needs a stable internal pipeline before transport binding
+- this prevents UI/backend coupling
+- this allows later Go-backed integration to replace only the remote adapter layer
+
+---
+
+### 22. Remote Adapter May Be Controlled/Non-Productive in 0.4.2
+
+During this subphase, the remote adapter is allowed to return an explicit controlled failure when the real contract is still unknown.
+
+This is preferable to:
+
+- inventing payloads
+- hardcoding speculative endpoints
+- pretending convergence exists when it does not
+
+---
+
+### 23. CRUD Mutations Must Not Bypass Feature Sync Layer
+
+After 0.4.1 and 0.4.2, create/update/delete flows of the outside-plant module must route through the feature mutation layer so that:
+
+- local persistence remains centralized
+- sync queue trace is guaranteed
+- future push/pull semantics remain coherent

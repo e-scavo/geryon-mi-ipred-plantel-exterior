@@ -16,4 +16,8 @@ abstract class OutsidePlantRepositoryContract {
   Future<void> deleteCajaPonOnt(OutsidePlantId id);
 
   Future<void> deleteBotellaEmpalme(OutsidePlantId id);
+
+  Future<void> markCajaPonOntSynced(OutsidePlantId id);
+
+  Future<void> markBotellaEmpalmeSynced(OutsidePlantId id);
 }

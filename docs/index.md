@@ -598,3 +598,20 @@ New implementation scope added in this subphase:
 New phase document:
 
 - `docs/phase_0_4_1_sync_foundations.md`
+
+---
+
+## Phase 0.4.2 Additions
+
+This subphase adds the controlled push layer on top of the local-first synchronization foundation already consolidated in 0.4.1.
+
+Added or updated in this subphase:
+
+- module-level remote sync contract
+- remote stub repository for non-speculative backend isolation
+- push processor for sequential queue execution
+- push cycle result model
+- repository sync-status update operations
+- mutation wiring corrections so CRUD flows always leave sync trace through the feature layer
+- minimal technical trigger on the module home to validate the push pipeline
+- `docs/phase_0_4_2_backend_push_sync.md`

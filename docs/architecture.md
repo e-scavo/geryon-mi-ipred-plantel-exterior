@@ -893,3 +893,42 @@ The inherited CRUD baseline already used physical delete.
 To keep 0.4.1 controlled and avoid destabilizing the current domain tables before backend contracts are known, the implementation records a delete tombstone in the queue first and only then removes the row locally.
 
 This preserves future push intent without forcing an early redesign of entity storage semantics in the same subphase.
+
+---
+
+## Phase 0.4.2 — Push Processing Layer
+
+Phase 0.4.2 introduces a new architectural slice above the local outbox created in 0.4.1.
+
+The resulting ownership model becomes:
+
+- UI: triggers feature-level actions only
+- mutation/service layer: persists local state and creates sync queue trace
+- sync queue repository: stores pending operations and queue state transitions
+- push processor: consumes queue items sequentially and dispatches them by entity + operation
+- remote sync contract: isolates the future backend integration from the rest of the module
+
+### Remote contract policy in 0.4.2
+
+The remote contract is intentionally introduced before the real backend mapping is known.
+
+This is allowed because the contract is used as a stable boundary, not as a speculative transport implementation.
+
+Therefore:
+
+- the processor can be completed now
+- the adapter can remain controlled/non-productive now
+- the future backend integration can replace only the adapter later
+
+### Push execution model
+
+The push processor is deliberately sequential.
+
+At this stage the priority is:
+
+- predictable ordering
+- simple diagnostics
+- explicit queue state transitions
+- low architectural risk
+
+Concurrency, queue compaction and retry hardening remain deferred.

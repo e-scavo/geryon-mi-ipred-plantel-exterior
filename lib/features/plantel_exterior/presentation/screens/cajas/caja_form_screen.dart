@@ -4,7 +4,7 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entit
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/geo_point.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 
 class CajaFormScreen extends ConsumerStatefulWidget {
   final CajaPonOnt? caja;
@@ -167,9 +167,12 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
               updatedAt: now,
             );
 
-      final repository = ref.read(outsidePlantRepositoryProvider);
-      await repository.saveCajaPonOnt(entity);
-      ref.invalidate(cajasPonOntListProvider);
+      await ref.read(
+        saveCajaPonOntProvider((
+          caja: entity,
+          isEditMode: widget.isEditMode,
+        )).future,
+      );
 
       if (!mounted) {
         return;
