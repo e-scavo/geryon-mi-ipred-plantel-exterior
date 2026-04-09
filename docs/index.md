@@ -633,3 +633,20 @@ Added or updated in this subphase:
 - explicit note that `cajas_list_screen.dart` and `botellas_list_screen.dart` remain present but empty/out of use for now
 - `docs/phase_0_4_3_backend_pull_refresh.md`
 
+
+---
+
+## Phase 0.4.4 Additions
+
+This subphase adds the first user-facing synchronization UX baseline on top of the foundations already consolidated in 0.4.1–0.4.3.
+
+Added or updated in this subphase:
+
+- `presentation/providers/outside_plant_sync_ui_provider.dart`
+- `presentation/widgets/outside_plant_sync_status_badge.dart`
+- `presentation/widgets/outside_plant_sync_summary_card.dart`
+- `presentation/widgets/outside_plant_sync_actions_card.dart`
+- `presentation/widgets/outside_plant_sync_feedback_banner.dart`
+- sync visibility improvements on cajas and botellas screens
+- edit-form contextual sync note for existing rows
+- `docs/phase_0_4_4_sync_ux_baseline.md`

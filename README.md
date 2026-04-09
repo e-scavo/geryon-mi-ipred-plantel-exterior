@@ -772,3 +772,24 @@ Result:
 - synchronized local rows can be refreshed from future remote state
 - pending local work is not overwritten by remote refresh
 
+
+---
+
+## Phase 0.4.4 — Sync UX Baseline
+
+Phase 0.4.4 transforms the technical sync controls introduced in 0.4.2/0.4.3 into a minimum usable UX baseline for the module.
+
+This subphase includes:
+
+- reusable sync status badge for outside-plant records
+- sync summary card on the module home
+- controlled action card for push/pull execution
+- feedback banner for the latest visible cycle result
+- presentation-scoped UI provider for execution state and summaries
+- edit-form contextual note explaining pending-after-save behavior
+
+Result:
+
+- synchronization becomes more understandable without changing the local-first architecture
+- the module home now communicates pending work, recent results and errors more clearly
+- push/pull remain controlled and manual, but no longer feel purely technical

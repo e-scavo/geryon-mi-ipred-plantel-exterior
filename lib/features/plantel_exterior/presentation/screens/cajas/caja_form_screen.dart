@@ -5,6 +5,7 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/geo_point.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 
 class CajaFormScreen extends ConsumerStatefulWidget {
   final CajaPonOnt? caja;
@@ -222,6 +223,36 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (isEditMode && widget.caja != null) ...[
+                        Row(
+                          children: [
+                            const Text('Estado actual:'),
+                            const SizedBox(width: 10),
+                            OutsidePlantSyncStatusBadge(
+                              status: widget.caja!.syncStatus,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer
+                                .withOpacity(0.45),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color:
+                                  theme.colorScheme.primary.withOpacity(0.18),
+                            ),
+                          ),
+                          child: Text(
+                            'Al guardar cambios, este registro vuelve a estado pendiente hasta que un push lo converja de nuevo. La edición sigue trabajando primero contra la base local.',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                       Text(
                         isEditMode
                             ? 'Edición de Caja PON / ONT'

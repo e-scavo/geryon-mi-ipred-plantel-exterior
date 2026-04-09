@@ -1053,3 +1053,39 @@ Rule:
 - do not opportunistically delete them in a sync phase
 - document their placeholder status and defer cleanup/reuse to a later UI phase
 
+
+---
+
+### 28. Synchronization Execution Feedback Must Stay In Presentation State
+
+Push/pull execution summaries are useful for UX but they are not durable domain truth.
+
+Rule:
+
+- keep the latest summaries and running flags in a presentation provider
+- do not add them to the database in 0.4.4
+- keep durable synchronization truth in entity state and queue state
+
+---
+
+### 29. Synchronization Status Must Use A Reusable Visual Badge
+
+The module already exposes `pending`, `synced` and `error` in the domain. 0.4.4 formalizes a reusable visual language for those states.
+
+Rule:
+
+- use a reusable sync status badge widget
+- avoid ad hoc free-text-only rendering where the row state matters
+- keep per-record sync visibility lightweight and consistent
+
+---
+
+### 30. Sync UX Baseline Must Remain Manual And Honest
+
+This phase improves usability, but it must not imply that the module already has background sync or final backend integration.
+
+Rule:
+
+- keep push and pull user-triggered
+- show clear feedback about recent execution
+- do not overstate the current backend readiness before real Go structures are wired

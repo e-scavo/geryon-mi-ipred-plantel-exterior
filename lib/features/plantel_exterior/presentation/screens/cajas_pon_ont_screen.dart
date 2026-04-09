@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/cajas/caja_form_screen.dart';
 
 class CajasPonOntScreen extends ConsumerWidget {
@@ -128,7 +128,7 @@ class CajasPonOntScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.3.4 mejora la experiencia de uso del CRUD con feedback visual más claro, validaciones más sólidas y acciones mejor comunicadas.',
+                'Phase 0.4.4 agrega baseline UX de sync al listado: cada registro muestra su estado local de convergencia sin romper el CRUD ni el modelo local-first.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -205,19 +205,26 @@ class _CajaCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    OutlinedButton.icon(
-                      onPressed: onEdit,
-                      icon: const Icon(Icons.edit_outlined),
-                      label: const Text('Editar'),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline),
-                      label: const Text('Eliminar'),
+                    OutsidePlantSyncStatusBadge(status: caja.syncStatus),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: onEdit,
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('Editar'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: onDelete,
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Eliminar'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -233,10 +240,6 @@ class _CajaCard extends StatelessWidget {
                   : '${caja.location!.latitude}, ${caja.location!.longitude}',
             ),
             _InfoRow(
-              label: 'Estado offline/sync',
-              value: _syncStatusLabel(caja.syncStatus),
-            ),
-            _InfoRow(
               label: 'Creado',
               value: caja.createdAt?.toIso8601String() ?? 'Sin dato',
             ),
@@ -248,17 +251,6 @@ class _CajaCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _syncStatusLabel(SyncStatus status) {
-    switch (status) {
-      case SyncStatus.pending:
-        return 'Pendiente';
-      case SyncStatus.synced:
-        return 'Sincronizado';
-      case SyncStatus.error:
-        return 'Error';
-    }
   }
 }
 

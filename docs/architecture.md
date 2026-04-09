@@ -970,3 +970,34 @@ The files:
 
 remain present but empty and unused in the current baseline. They are preserved for controlled cleanup or reuse in a later UX-oriented phase instead of being removed opportunistically now.
 
+
+---
+
+## Phase 0.4.4 — Synchronization UX Baseline Layer
+
+Phase 0.4.4 adds a presentation-only synchronization UX layer on top of the already existing local queue, push processor and pull processor.
+
+### UX responsibilities introduced in 0.4.4
+
+- render per-row sync status with a reusable badge
+- retain the latest visible push/pull summaries in presentation state
+- expose controlled loading/disabled states for manual sync actions
+- surface recent errors without persisting them as new domain data
+
+### Architectural rule in 0.4.4
+
+Execution summaries and UI blocking state belong to a presentation provider, not to the local database.
+
+Therefore:
+
+- durable operational truth remains in entity `syncStatus` and in the local queue
+- ephemeral execution feedback remains in `outside_plant_sync_ui_provider.dart`
+- home/dashboard widgets consume processor results indirectly through presentation state
+
+### Explicit non-goals preserved in 0.4.4
+
+- no background sync
+- no automatic retries
+- no queue compaction
+- no backend contract finalization
+- no deletion of residual placeholder screens or deprecated provider path during this phase

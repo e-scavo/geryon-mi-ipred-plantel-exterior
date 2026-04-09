@@ -871,3 +871,25 @@ Characteristics:
 - pull does not overwrite local work in progress
 - pull does not implement remote deletions yet
 
+
+---
+
+## Phase 0.4.4 — Synchronization UX Flow
+
+Phase 0.4.4 adds a visible presentation cycle around the already existing push and pull processors.
+
+Conceptual flow:
+
+    user presses push or pull action
+        → presentation sync-ui provider marks the execution as running
+        → existing processor runs
+        → result is translated into a user-visible summary
+        → pending counters and lists are invalidated as needed
+        → home widgets and list cards rebuild from local data + presentation summaries
+
+Characteristics:
+
+- the execution still depends on the same processors from 0.4.2/0.4.3
+- UX state is ephemeral and presentation-scoped
+- list cards surface `pending`, `synced` and `error` more clearly
+- edit forms explain why a saved row returns to `pending`
