@@ -43,17 +43,43 @@ class OutsidePlantSyncActionsCard extends ConsumerWidget {
                       ? null
                       : () async {
                           final messenger = ScaffoldMessenger.of(context);
-                          final result = await ref.refresh(
-                            runOutsidePlantPushSyncActionProvider.future,
-                          );
+                          final syncUiNotifier =
+                              ref.read(outsidePlantSyncUiProvider.notifier);
 
-                          if (!context.mounted) {
-                            return;
+                          syncUiNotifier.startPush();
+
+                          try {
+                            final result = await ref.refresh(
+                              runOutsidePlantPushSyncProvider.future,
+                            );
+
+                            syncUiNotifier.completePush(result);
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Push ejecutado. Procesados: ${result.processedCount} | OK: ${result.successCount} | Error: ${result.errorCount}',
+                                ),
+                              ),
+                            );
+                          } catch (error) {
+                            syncUiNotifier.failPush(error);
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Push falló. ${error.toString()}'),
+                              ),
+                            );
                           }
-
-                          messenger.showSnackBar(
-                            SnackBar(content: Text(result)),
-                          );
                         },
                   icon: syncUiState.isPushRunning
                       ? const SizedBox(
@@ -73,17 +99,43 @@ class OutsidePlantSyncActionsCard extends ConsumerWidget {
                       ? null
                       : () async {
                           final messenger = ScaffoldMessenger.of(context);
-                          final result = await ref.refresh(
-                            runOutsidePlantPullSyncActionProvider.future,
-                          );
+                          final syncUiNotifier =
+                              ref.read(outsidePlantSyncUiProvider.notifier);
 
-                          if (!context.mounted) {
-                            return;
+                          syncUiNotifier.startPull();
+
+                          try {
+                            final result = await ref.refresh(
+                              runOutsidePlantPullSyncProvider.future,
+                            );
+
+                            syncUiNotifier.completePull(result);
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Pull ejecutado. Remotos: ${result.fetchedCount} | Insertados: ${result.insertedCount} | Actualizados: ${result.updatedCount} | Omitidos: ${result.skippedCount}',
+                                ),
+                              ),
+                            );
+                          } catch (error) {
+                            syncUiNotifier.failPull(error);
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Pull falló. ${error.toString()}'),
+                              ),
+                            );
                           }
-
-                          messenger.showSnackBar(
-                            SnackBar(content: Text(result)),
-                          );
                         },
                   icon: syncUiState.isPullRunning
                       ? const SizedBox(
