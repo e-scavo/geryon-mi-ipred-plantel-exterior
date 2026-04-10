@@ -918,3 +918,34 @@ Characteristics:
 - push and pull cannot be started concurrently from the supported UX path
 - durable local-first behavior remains unchanged
 - hardening is additive and does not invent backend contracts
+
+
+---
+
+## Phase 0.5.1 — Operational Data Capture And Inspection Flow
+
+Phase 0.5.1 keeps the same create/update/delete and sync flow ownership, but enriches the data that moves through those flows.
+
+Conceptual flow:
+
+    user opens create/edit form
+        → enters base identity fields
+        → optionally enters operational fields
+             → technical code
+             → external reference
+             → operational status
+             → criticidad
+             → zona / sector / tramo
+             → technical notes
+        → local validation runs
+        → local entity is saved
+        → sync queue snapshot is generated with the richer payload
+        → active list screens rebuild from local DB
+        → row card exposes a richer operational summary
+
+Characteristics:
+
+- local-first ownership remains unchanged
+- operational fields are optional and additive
+- manual push/pull still use the same queue and processors from 0.4.x
+- the richer payload remains local-domain oriented until the final backend contract is introduced

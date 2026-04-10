@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/botellas/botella_form_screen.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 
 class BotellasEmpalmeScreen extends ConsumerWidget {
   const BotellasEmpalmeScreen({super.key});
@@ -130,7 +130,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.4.4 agrega baseline UX de sync al listado: cada registro muestra su estado local de convergencia sin romper el CRUD ni el modelo local-first.',
+                'Phase 0.5.1 amplía el valor operativo del listado: cada registro mantiene el estado de sync visible y suma contexto técnico local como estado operativo, criticidad y ubicación lógica.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -187,6 +187,7 @@ class _BotellaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final operationalSummary = _buildOperationalSummary(botella);
 
     return Card(
       elevation: 2,
@@ -200,11 +201,24 @@ class _BotellaCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                    botella.codigo,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        botella.codigo,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (operationalSummary.isNotEmpty)
+                        Text(
+                          operationalSummary,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Column(
@@ -235,6 +249,34 @@ class _BotellaCard extends StatelessWidget {
             const SizedBox(height: 14),
             _InfoRow(label: 'ID', value: botella.id.value),
             _InfoRow(label: 'Descripción', value: botella.descripcion),
+            if (_hasValue(botella.codigoTecnico))
+              _InfoRow(
+                label: 'Código técnico',
+                value: botella.codigoTecnico!,
+              ),
+            if (_hasValue(botella.referenciaExterna))
+              _InfoRow(
+                label: 'Referencia externa',
+                value: botella.referenciaExterna!,
+              ),
+            _InfoRow(
+              label: 'Estado operativo',
+              value: botella.estadoOperativo ?? 'Sin dato',
+            ),
+            _InfoRow(
+              label: 'Criticidad',
+              value: botella.criticidad?.toString() ?? 'Sin dato',
+            ),
+            _InfoRow(
+              label: 'Zona / Sector / Tramo',
+              value:
+                  _buildZoneText(botella.zona, botella.sector, botella.tramo),
+            ),
+            if (_hasValue(botella.observacionesTecnicas))
+              _InfoRow(
+                label: 'Observaciones técnicas',
+                value: botella.observacionesTecnicas!,
+              ),
             _InfoRow(
               label: 'Ubicación',
               value: botella.location == null
@@ -254,6 +296,43 @@ class _BotellaCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _buildOperationalSummary(BotellaEmpalme botella) {
+  final parts = <String>[];
+
+  if (_hasValue(botella.estadoOperativo)) {
+    parts.add(botella.estadoOperativo!);
+  }
+  if (botella.criticidad != null) {
+    parts.add('Criticidad ${botella.criticidad}');
+  }
+
+  final zoneText = _buildZoneText(botella.zona, botella.sector, botella.tramo);
+  if (zoneText != 'Sin dato') {
+    parts.add(zoneText);
+  }
+
+  if (_hasValue(botella.codigoTecnico)) {
+    parts.add('Técnico ${botella.codigoTecnico}');
+  }
+
+  return parts.join(' • ');
+}
+
+bool _hasValue(String? value) => value != null && value.trim().isNotEmpty;
+
+String _buildZoneText(String? zona, String? sector, String? tramo) {
+  final parts = [zona, sector, tramo]
+      .where((item) => item != null && item.trim().isNotEmpty)
+      .cast<String>()
+      .toList();
+
+  if (parts.isEmpty) {
+    return 'Sin dato';
+  }
+
+  return parts.join(' / ');
 }
 
 class _InfoRow extends StatelessWidget {

@@ -1033,3 +1033,36 @@ Therefore:
 - no automatic retry scheduler
 - no opportunistic deletion of the deprecated application provider path
 - no cleanup of the still-empty wrapper list screens during this phase
+
+
+---
+
+## Phase 0.5.1 — Operational Domain Enrichment Layer
+
+Phase 0.5.1 adds operational richness to the local domain model without changing the synchronization architecture already stabilized in 0.4.5.
+
+### Responsibilities introduced in 0.5.1
+
+- extend Caja PON / ONT and Botella de Empalme with operational fields useful for technical field work
+- keep the same entity ownership and same persistence boundaries
+- expose richer semantics in active forms and active list screens
+- prepare the domain for future relationship and topology work without inventing backend DTOs yet
+
+### Architectural rule in 0.5.1
+
+Operational enrichment belongs to the local domain first, not to speculative remote contracts.
+
+Therefore:
+
+- entity extensions remain nullable and additive
+- current forms and list cards become the visible consumers of those fields
+- queue, push and pull processors keep the same responsibilities from 0.4.x
+- real backend alignment still waits for the future Go structs and transport details
+
+### Explicit non-goals preserved in 0.5.1
+
+- no entity relationships yet
+- no topology graph yet
+- no real backend Go contract integration yet
+- no ServiceProvider ownership changes
+- no redesign of the manual synchronization UX

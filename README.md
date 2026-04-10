@@ -814,3 +814,24 @@ Result:
 - push and pull keep their controlled manual behavior, but now with one hardened execution path
 - sync UI state is more predictable under rapid interaction
 - the module closes Phase 0.4 with less architectural residue and safer UX behavior
+
+
+---
+
+## Phase 0.5.1 — Operational Fields Baseline
+
+Phase 0.5.1 starts the domain-operational consolidation stage on top of the already hardened local-first synchronization baseline from 0.4.1–0.4.5.
+
+This subphase includes:
+
+- additive operational fields for Caja PON / ONT and Botella de Empalme
+- schema migration already applied in the local Drift database
+- richer form capture for technical code, external reference, operational status, criticidad and logical location
+- richer list rendering so technical context can be inspected without opening the editor first
+- preservation of the current local-first queue and manual push/pull baseline
+
+Result:
+
+- the module stops behaving as a minimal CRUD-only surface and starts exposing more realistic outside-plant operational data
+- technical context remains local-domain oriented and does not depend on the final Go structs yet
+- the synchronization baseline remains unchanged while snapshots now carry richer local semantics

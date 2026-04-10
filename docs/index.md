@@ -666,3 +666,18 @@ Added or updated in this subphase:
 - single-path manual execution retained in `outside_plant_sync_actions_card.dart`
 - refreshed module home wording to reflect hardening scope
 - `docs/phase_0_4_5_sync_hardening.md`
+
+
+---
+
+## Phase 0.5.1 Additions
+
+This subphase opens the domain-operational consolidation stage without changing the local-first synchronization ownership already closed in 0.4.5.
+
+Added or updated in this subphase:
+
+- operational fields in Caja PON / ONT and Botella de Empalme entities
+- operational fields rendered in active create/edit forms
+- richer operational summaries in the active cajas and botellas listing screens
+- cumulative documentation of the new local-domain scope and explicit reminder that real Go structs remain pending for future backend integration
+- `docs/phase_0_5_1_operational_fields_baseline.md`

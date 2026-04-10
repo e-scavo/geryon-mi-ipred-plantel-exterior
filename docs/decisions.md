@@ -1114,3 +1114,34 @@ Rule:
 - let the sync UI notifier reject `startPush()` or `startPull()` when another execution is already active
 - keep buttons visually disabled as the first barrier
 - keep notifier guards as the second barrier so rapid interaction or future UI reuse cannot bypass the rule
+
+
+---
+
+### 33. Operational Domain Enrichment Must Precede Real Backend Alignment
+
+Phase 0.5.1 starts the next stage by improving local domain usefulness before wiring the final backend contract.
+
+Rule:
+
+- enrich local entities first with additive operational fields
+- keep those fields nullable and non-destructive
+- defer final backend DTO alignment until the real Go structs and send contract are provided
+
+Reason:
+
+- improve real technical usability now
+- avoid speculative remote contracts
+- preserve the already hardened local-first baseline
+
+---
+
+### 34. Active Forms And Active List Screens Must Surface The New Operational Fields
+
+Once operational fields exist in the domain, leaving them invisible in the active UX would keep the module artificially limited.
+
+Rule:
+
+- active create/edit forms must allow capturing the new operational fields
+- active cajas and botellas list screens must expose a useful operational summary
+- empty placeholder wrapper files under `presentation/screens/cajas` and `presentation/screens/botellas` still remain outside the active path until a later cleanup phase

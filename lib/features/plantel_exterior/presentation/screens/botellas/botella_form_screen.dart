@@ -28,6 +28,14 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
   late final TextEditingController _descripcionController;
   late final TextEditingController _latitudeController;
   late final TextEditingController _longitudeController;
+  late final TextEditingController _codigoTecnicoController;
+  late final TextEditingController _referenciaExternaController;
+  late final TextEditingController _estadoOperativoController;
+  late final TextEditingController _criticidadController;
+  late final TextEditingController _zonaController;
+  late final TextEditingController _sectorController;
+  late final TextEditingController _tramoController;
+  late final TextEditingController _observacionesTecnicasController;
 
   bool _saving = false;
   String? _errorText;
@@ -48,6 +56,30 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
     _longitudeController = TextEditingController(
       text: widget.botella?.location?.longitude.toString() ?? '',
     );
+    _codigoTecnicoController = TextEditingController(
+      text: widget.botella?.codigoTecnico ?? '',
+    );
+    _referenciaExternaController = TextEditingController(
+      text: widget.botella?.referenciaExterna ?? '',
+    );
+    _estadoOperativoController = TextEditingController(
+      text: widget.botella?.estadoOperativo ?? '',
+    );
+    _criticidadController = TextEditingController(
+      text: widget.botella?.criticidad?.toString() ?? '',
+    );
+    _zonaController = TextEditingController(
+      text: widget.botella?.zona ?? '',
+    );
+    _sectorController = TextEditingController(
+      text: widget.botella?.sector ?? '',
+    );
+    _tramoController = TextEditingController(
+      text: widget.botella?.tramo ?? '',
+    );
+    _observacionesTecnicasController = TextEditingController(
+      text: widget.botella?.observacionesTecnicas ?? '',
+    );
   }
 
   @override
@@ -56,6 +88,14 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
     _descripcionController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
+    _codigoTecnicoController.dispose();
+    _referenciaExternaController.dispose();
+    _estadoOperativoController.dispose();
+    _criticidadController.dispose();
+    _zonaController.dispose();
+    _sectorController.dispose();
+    _tramoController.dispose();
+    _observacionesTecnicasController.dispose();
     super.dispose();
   }
 
@@ -81,12 +121,33 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
     return null;
   }
 
+  String? _validateCriticidad(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return null;
+    }
+
+    final criticidad = int.tryParse(text);
+    if (criticidad == null) {
+      return 'La criticidad debe ser un número entero entre 1 y 5.';
+    }
+    if (criticidad < 1 || criticidad > 5) {
+      return 'La criticidad debe estar entre 1 y 5.';
+    }
+    return null;
+  }
+
   double? _tryParseCoordinate(String text) {
     final normalized = text.trim().replaceAll(',', '.');
     if (normalized.isEmpty) {
       return null;
     }
     return double.tryParse(normalized);
+  }
+
+  String? _normalizedText(TextEditingController controller) {
+    final text = controller.text.trim();
+    return text.isEmpty ? null : text;
   }
 
   Future<void> _handleSave() async {
@@ -134,6 +195,17 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
       return;
     }
 
+    final criticidadText = _criticidadController.text.trim();
+    final criticidad =
+        criticidadText.isEmpty ? null : int.tryParse(criticidadText);
+
+    if (criticidadText.isNotEmpty && criticidad == null) {
+      setState(() {
+        _errorText = 'La criticidad debe ser un número entero válido.';
+      });
+      return;
+    }
+
     setState(() {
       _saving = true;
       _errorText = null;
@@ -141,15 +213,25 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
 
     try {
       final now = DateTime.now();
+      final location = latitude != null && longitude != null
+          ? GeoPoint(latitude: latitude, longitude: longitude)
+          : null;
 
       final entity = widget.isEditMode
           ? BotellaEmpalme(
               id: widget.botella!.id,
               codigo: _codigoController.text.trim(),
               descripcion: _descripcionController.text.trim(),
-              location: latitude != null && longitude != null
-                  ? GeoPoint(latitude: latitude, longitude: longitude)
-                  : null,
+              location: location,
+              codigoTecnico: _normalizedText(_codigoTecnicoController),
+              referenciaExterna: _normalizedText(_referenciaExternaController),
+              observacionesTecnicas:
+                  _normalizedText(_observacionesTecnicasController),
+              estadoOperativo: _normalizedText(_estadoOperativoController),
+              criticidad: criticidad,
+              zona: _normalizedText(_zonaController),
+              sector: _normalizedText(_sectorController),
+              tramo: _normalizedText(_tramoController),
               syncStatus: SyncStatus.pending,
               createdAt: widget.botella!.createdAt,
               updatedAt: now,
@@ -160,9 +242,16 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
               ),
               codigo: _codigoController.text.trim(),
               descripcion: _descripcionController.text.trim(),
-              location: latitude != null && longitude != null
-                  ? GeoPoint(latitude: latitude, longitude: longitude)
-                  : null,
+              location: location,
+              codigoTecnico: _normalizedText(_codigoTecnicoController),
+              referenciaExterna: _normalizedText(_referenciaExternaController),
+              observacionesTecnicas:
+                  _normalizedText(_observacionesTecnicasController),
+              estadoOperativo: _normalizedText(_estadoOperativoController),
+              criticidad: criticidad,
+              zona: _normalizedText(_zonaController),
+              sector: _normalizedText(_sectorController),
+              tramo: _normalizedText(_tramoController),
               syncStatus: SyncStatus.pending,
               createdAt: now,
               updatedAt: now,
@@ -269,6 +358,7 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
                         style: theme.textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 20),
+                      _SectionTitle(title: 'Identificación base'),
                       TextFormField(
                         controller: _codigoController,
                         enabled: !_saving,
@@ -291,7 +381,98 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
                         ),
                         validator: _validateDescripcion,
                       ),
+                      const SizedBox(height: 24),
+                      _SectionTitle(title: 'Campos operativos'),
+                      TextFormField(
+                        controller: _codigoTecnicoController,
+                        enabled: !_saving,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Código técnico (opcional)',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                       const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _referenciaExternaController,
+                        enabled: !_saving,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Referencia externa (opcional)',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _estadoOperativoController,
+                              enabled: !_saving,
+                              textInputAction: TextInputAction.next,
+                              decoration: const InputDecoration(
+                                labelText: 'Estado operativo (opcional)',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _criticidadController,
+                              enabled: !_saving,
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.next,
+                              decoration: const InputDecoration(
+                                labelText: 'Criticidad 1-5 (opcional)',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: _validateCriticidad,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _SectionTitle(title: 'Ubicación operativa'),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _zonaController,
+                              enabled: !_saving,
+                              textInputAction: TextInputAction.next,
+                              decoration: const InputDecoration(
+                                labelText: 'Zona (opcional)',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _sectorController,
+                              enabled: !_saving,
+                              textInputAction: TextInputAction.next,
+                              decoration: const InputDecoration(
+                                labelText: 'Sector (opcional)',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _tramoController,
+                        enabled: !_saving,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Tramo (opcional)',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _SectionTitle(title: 'Coordenadas'),
                       TextFormField(
                         controller: _latitudeController,
                         enabled: !_saving,
@@ -302,7 +483,7 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Latitud (opcional)',
                           border: OutlineInputBorder(),
-                          hintText: '-32.9470',
+                          hintText: '-32.9442',
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -316,7 +497,19 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Longitud (opcional)',
                           border: OutlineInputBorder(),
-                          hintText: '-60.6401',
+                          hintText: '-60.6505',
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _SectionTitle(title: 'Observaciones'),
+                      TextFormField(
+                        controller: _observacionesTecnicasController,
+                        enabled: !_saving,
+                        maxLines: 4,
+                        textInputAction: TextInputAction.newline,
+                        decoration: const InputDecoration(
+                          labelText: 'Observaciones técnicas (opcional)',
+                          border: OutlineInputBorder(),
                         ),
                       ),
                       if (_errorText != null) ...[
@@ -378,6 +571,29 @@ class _BotellaFormScreenState extends ConsumerState<BotellaFormScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+
+  const _SectionTitle({
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

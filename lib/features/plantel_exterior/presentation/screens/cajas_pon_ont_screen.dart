@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/cajas/caja_form_screen.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 
 class CajasPonOntScreen extends ConsumerWidget {
   const CajasPonOntScreen({super.key});
@@ -128,7 +128,7 @@ class CajasPonOntScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Phase 0.4.4 agrega baseline UX de sync al listado: cada registro muestra su estado local de convergencia sin romper el CRUD ni el modelo local-first.',
+                'Phase 0.5.1 amplía el valor operativo del listado: cada registro mantiene el estado de sync visible y suma contexto técnico local como estado operativo, criticidad y ubicación lógica.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -185,6 +185,7 @@ class _CajaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final operationalSummary = _buildOperationalSummary(caja);
 
     return Card(
       elevation: 2,
@@ -198,11 +199,24 @@ class _CajaCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                    caja.codigo,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        caja.codigo,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (operationalSummary.isNotEmpty)
+                        Text(
+                          operationalSummary,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Column(
@@ -233,6 +247,30 @@ class _CajaCard extends StatelessWidget {
             const SizedBox(height: 14),
             _InfoRow(label: 'ID', value: caja.id.value),
             _InfoRow(label: 'Descripción', value: caja.descripcion),
+            if (_hasValue(caja.codigoTecnico))
+              _InfoRow(label: 'Código técnico', value: caja.codigoTecnico!),
+            if (_hasValue(caja.referenciaExterna))
+              _InfoRow(
+                label: 'Referencia externa',
+                value: caja.referenciaExterna!,
+              ),
+            _InfoRow(
+              label: 'Estado operativo',
+              value: caja.estadoOperativo ?? 'Sin dato',
+            ),
+            _InfoRow(
+              label: 'Criticidad',
+              value: caja.criticidad?.toString() ?? 'Sin dato',
+            ),
+            _InfoRow(
+              label: 'Zona / Sector / Tramo',
+              value: _buildZoneText(caja.zona, caja.sector, caja.tramo),
+            ),
+            if (_hasValue(caja.observacionesTecnicas))
+              _InfoRow(
+                label: 'Observaciones técnicas',
+                value: caja.observacionesTecnicas!,
+              ),
             _InfoRow(
               label: 'Ubicación',
               value: caja.location == null
@@ -252,6 +290,43 @@ class _CajaCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _buildOperationalSummary(CajaPonOnt caja) {
+  final parts = <String>[];
+
+  if (_hasValue(caja.estadoOperativo)) {
+    parts.add(caja.estadoOperativo!);
+  }
+  if (caja.criticidad != null) {
+    parts.add('Criticidad ${caja.criticidad}');
+  }
+
+  final zoneText = _buildZoneText(caja.zona, caja.sector, caja.tramo);
+  if (zoneText != 'Sin dato') {
+    parts.add(zoneText);
+  }
+
+  if (_hasValue(caja.codigoTecnico)) {
+    parts.add('Técnico ${caja.codigoTecnico}');
+  }
+
+  return parts.join(' • ');
+}
+
+bool _hasValue(String? value) => value != null && value.trim().isNotEmpty;
+
+String _buildZoneText(String? zona, String? sector, String? tramo) {
+  final parts = [zona, sector, tramo]
+      .where((item) => item != null && item.trim().isNotEmpty)
+      .cast<String>()
+      .toList();
+
+  if (parts.isEmpty) {
+    return 'Sin dato';
+  }
+
+  return parts.join(' / ');
 }
 
 class _InfoRow extends StatelessWidget {
