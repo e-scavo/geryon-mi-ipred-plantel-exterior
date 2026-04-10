@@ -2,9 +2,11 @@ import 'package:drift/drift.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/local/app_database.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/mappers/botella_empalme_mapper.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/mappers/caja_pon_ont_mapper.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/mappers/outside_plant_relationship_mapper.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/contracts/outside_plant_repository_contract.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/outside_plant_relationship.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/geo_point.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
@@ -121,6 +123,49 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
   }
 
   @override
+  Future<List<OutsidePlantRelationship>> getRelationships() async {
+    final rows = await db.customSelect(
+      '''
+      SELECT id, source_entity_type, source_entity_id,
+             target_entity_type, target_entity_id,
+             relationship_type, sync_status, created_at, updated_at
+      FROM outside_plant_relationships
+      ORDER BY updated_at DESC, created_at DESC, relationship_type ASC
+      ''',
+      readsFrom: {},
+    ).get();
+
+    return rows.map(_mapRelationshipRow).toList();
+  }
+
+  @override
+  Future<List<OutsidePlantRelationship>> getRelationshipsByEntity({
+    required String entityType,
+    required OutsidePlantId entityId,
+  }) async {
+    final rows = await db.customSelect(
+      '''
+      SELECT id, source_entity_type, source_entity_id,
+             target_entity_type, target_entity_id,
+             relationship_type, sync_status, created_at, updated_at
+      FROM outside_plant_relationships
+      WHERE (source_entity_type = ? AND source_entity_id = ?)
+         OR (target_entity_type = ? AND target_entity_id = ?)
+      ORDER BY updated_at DESC, created_at DESC, relationship_type ASC
+      ''',
+      variables: [
+        Variable<String>(entityType),
+        Variable<String>(entityId.value),
+        Variable<String>(entityType),
+        Variable<String>(entityId.value),
+      ],
+      readsFrom: {},
+    ).get();
+
+    return rows.map(_mapRelationshipRow).toList();
+  }
+
+  @override
   Future<void> saveCajaPonOnt(CajaPonOnt caja) async {
     await db.into(db.cajasPonOntTable).insertOnConflictUpdate(
           CajaPonOntMapper.toCompanion(caja),
@@ -159,7 +204,64 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
   }
 
   @override
+  Future<void> saveRelationship(OutsidePlantRelationship relationship) async {
+    _validateRelationship(relationship);
+
+    final now = DateTime.now();
+    final normalized = relationship.copyWith(
+      sourceEntityType: relationship.sourceEntityType.trim(),
+      sourceEntityId: relationship.sourceEntityId.trim(),
+      targetEntityType: relationship.targetEntityType.trim(),
+      targetEntityId: relationship.targetEntityId.trim(),
+      relationshipType: relationship.relationshipType.trim(),
+      createdAt: relationship.createdAt ?? now,
+      updatedAt: relationship.updatedAt ?? now,
+    );
+
+    await db.customStatement(
+      '''
+      INSERT INTO outside_plant_relationships (
+        id,
+        source_entity_type,
+        source_entity_id,
+        target_entity_type,
+        target_entity_id,
+        relationship_type,
+        sync_status,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        source_entity_type = excluded.source_entity_type,
+        source_entity_id = excluded.source_entity_id,
+        target_entity_type = excluded.target_entity_type,
+        target_entity_id = excluded.target_entity_id,
+        relationship_type = excluded.relationship_type,
+        sync_status = excluded.sync_status,
+        created_at = COALESCE(outside_plant_relationships.created_at, excluded.created_at),
+        updated_at = excluded.updated_at
+      ''',
+      [
+        normalized.id,
+        normalized.sourceEntityType,
+        normalized.sourceEntityId,
+        normalized.targetEntityType,
+        normalized.targetEntityId,
+        normalized.relationshipType,
+        _syncStatusToDb(normalized.syncStatus),
+        normalized.createdAt?.toIso8601String(),
+        normalized.updatedAt?.toIso8601String(),
+      ],
+    );
+  }
+
+  @override
   Future<void> deleteCajaPonOnt(OutsidePlantId id) async {
+    await _deleteRelationshipsForEntity(
+      entityType: 'caja_pon_ont',
+      entityId: id.value,
+    );
+
     final query = db.delete(db.cajasPonOntTable)
       ..where((tbl) => tbl.id.equals(id.value));
     await query.go();
@@ -167,9 +269,22 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
 
   @override
   Future<void> deleteBotellaEmpalme(OutsidePlantId id) async {
+    await _deleteRelationshipsForEntity(
+      entityType: 'botella_empalme',
+      entityId: id.value,
+    );
+
     final query = db.delete(db.botellasEmpalmeTable)
       ..where((tbl) => tbl.id.equals(id.value));
     await query.go();
+  }
+
+  @override
+  Future<void> deleteRelationship(String relationshipId) async {
+    await db.customStatement(
+      'DELETE FROM outside_plant_relationships WHERE id = ?',
+      [relationshipId],
+    );
   }
 
   @override
@@ -194,6 +309,49 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  @override
+  Future<void> markRelationshipSynced(String relationshipId) async {
+    await db.customStatement(
+      '''
+      UPDATE outside_plant_relationships
+      SET sync_status = 'synced', updated_at = ?
+      WHERE id = ?
+      ''',
+      [DateTime.now().toIso8601String(), relationshipId],
+    );
+  }
+
+  @override
+  Future<bool> relationshipExists({
+    required String sourceEntityType,
+    required String sourceEntityId,
+    required String targetEntityType,
+    required String targetEntityId,
+    required String relationshipType,
+  }) async {
+    final row = await db.customSelect(
+      '''
+      SELECT COUNT(*) AS total
+      FROM outside_plant_relationships
+      WHERE source_entity_type = ?
+        AND source_entity_id = ?
+        AND target_entity_type = ?
+        AND target_entity_id = ?
+        AND relationship_type = ?
+      ''',
+      variables: [
+        Variable<String>(sourceEntityType.trim()),
+        Variable<String>(sourceEntityId.trim()),
+        Variable<String>(targetEntityType.trim()),
+        Variable<String>(targetEntityId.trim()),
+        Variable<String>(relationshipType.trim()),
+      ],
+      readsFrom: {},
+    ).getSingle();
+
+    return row.read<int>('total') > 0;
   }
 
   CajaPonOnt _mapCajaRow(QueryRow row) {
@@ -254,6 +412,20 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
     );
   }
 
+  OutsidePlantRelationship _mapRelationshipRow(QueryRow row) {
+    return OutsidePlantRelationshipMapper.fromRow({
+      'id': row.read<String>('id'),
+      'source_entity_type': row.read<String>('source_entity_type'),
+      'source_entity_id': row.read<String>('source_entity_id'),
+      'target_entity_type': row.read<String>('target_entity_type'),
+      'target_entity_id': row.read<String>('target_entity_id'),
+      'relationship_type': row.read<String>('relationship_type'),
+      'sync_status': row.read<String>('sync_status'),
+      'created_at': _readDateTime(row, 'created_at'),
+      'updated_at': _readDateTime(row, 'updated_at'),
+    });
+  }
+
   Future<void> _updateOperationalFields({
     required String tableName,
     required String id,
@@ -281,6 +453,52 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
     ''');
   }
 
+  Future<void> _deleteRelationshipsForEntity({
+    required String entityType,
+    required String entityId,
+  }) async {
+    await db.customStatement(
+      '''
+      DELETE FROM outside_plant_relationships
+      WHERE (source_entity_type = ? AND source_entity_id = ?)
+         OR (target_entity_type = ? AND target_entity_id = ?)
+      ''',
+      [entityType, entityId, entityType, entityId],
+    );
+  }
+
+  void _validateRelationship(OutsidePlantRelationship relationship) {
+    final sourceEntityType = relationship.sourceEntityType.trim();
+    final targetEntityType = relationship.targetEntityType.trim();
+    final sourceEntityId = relationship.sourceEntityId.trim();
+    final targetEntityId = relationship.targetEntityId.trim();
+    final relationshipType = relationship.relationshipType.trim();
+
+    if (!OutsidePlantRelationshipMapper.allowedEntityTypes
+        .contains(sourceEntityType)) {
+      throw ArgumentError('Unsupported source entity type: $sourceEntityType');
+    }
+
+    if (!OutsidePlantRelationshipMapper.allowedEntityTypes
+        .contains(targetEntityType)) {
+      throw ArgumentError('Unsupported target entity type: $targetEntityType');
+    }
+
+    if (sourceEntityId.isEmpty || targetEntityId.isEmpty) {
+      throw ArgumentError('Relationship source and target IDs are required.');
+    }
+
+    if (relationshipType.isEmpty) {
+      throw ArgumentError('Relationship type is required.');
+    }
+
+    if (sourceEntityType == targetEntityType &&
+        sourceEntityId == targetEntityId) {
+      throw ArgumentError(
+          'A relationship cannot target the same entity as source.');
+    }
+  }
+
   SyncStatus _syncStatusFromDb(String raw) {
     switch (raw) {
       case 'pending':
@@ -292,6 +510,25 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
       default:
         return SyncStatus.pending;
     }
+  }
+
+  String _syncStatusToDb(SyncStatus status) {
+    switch (status) {
+      case SyncStatus.pending:
+        return 'pending';
+      case SyncStatus.synced:
+        return 'synced';
+      case SyncStatus.error:
+        return 'error';
+    }
+  }
+
+  DateTime? _readDateTime(QueryRow row, String key) {
+    final raw = row.read<String?>(key);
+    if (raw == null || raw.trim().isEmpty) {
+      return null;
+    }
+    return DateTime.tryParse(raw);
   }
 
   String? _normalizeNullableString(String? value) {

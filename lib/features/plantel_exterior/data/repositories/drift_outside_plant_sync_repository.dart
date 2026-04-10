@@ -79,7 +79,7 @@ class DriftOutsidePlantSyncRepository implements OutsidePlantSyncContract {
       readsFrom: {},
     ).getSingle();
 
-    return row.read<int>('total') ?? 0;
+    return row.read<int>('total');
   }
 
   @override
