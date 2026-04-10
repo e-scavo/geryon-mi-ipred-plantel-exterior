@@ -5,6 +5,8 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/data/mappers
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/contracts/outside_plant_repository_contract.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/geo_point.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -86,14 +88,36 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
 
   @override
   Future<List<CajaPonOnt>> getCajasPonOnt() async {
-    final rows = await db.select(db.cajasPonOntTable).get();
-    return rows.map(CajaPonOntMapper.toEntity).toList();
+    final rows = await db.customSelect(
+      '''
+      SELECT id, codigo, descripcion, latitude, longitude,
+             codigo_tecnico, referencia_externa, observaciones_tecnicas,
+             estado_operativo, criticidad, zona, sector, tramo,
+             sync_status, created_at, updated_at
+      FROM cajas_pon_ont
+      ORDER BY updated_at DESC, codigo ASC
+      ''',
+      readsFrom: {db.cajasPonOntTable},
+    ).get();
+
+    return rows.map(_mapCajaRow).toList();
   }
 
   @override
   Future<List<BotellaEmpalme>> getBotellasEmpalme() async {
-    final rows = await db.select(db.botellasEmpalmeTable).get();
-    return rows.map(BotellaEmpalmeMapper.toEntity).toList();
+    final rows = await db.customSelect(
+      '''
+      SELECT id, codigo, descripcion, latitude, longitude,
+             codigo_tecnico, referencia_externa, observaciones_tecnicas,
+             estado_operativo, criticidad, zona, sector, tramo,
+             sync_status, created_at, updated_at
+      FROM botellas_empalme
+      ORDER BY updated_at DESC, codigo ASC
+      ''',
+      readsFrom: {db.botellasEmpalmeTable},
+    ).get();
+
+    return rows.map(_mapBotellaRow).toList();
   }
 
   @override
@@ -101,6 +125,18 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
     await db.into(db.cajasPonOntTable).insertOnConflictUpdate(
           CajaPonOntMapper.toCompanion(caja),
         );
+    await _updateOperationalFields(
+      tableName: 'cajas_pon_ont',
+      id: caja.id.value,
+      codigoTecnico: caja.codigoTecnico,
+      referenciaExterna: caja.referenciaExterna,
+      observacionesTecnicas: caja.observacionesTecnicas,
+      estadoOperativo: caja.estadoOperativo,
+      criticidad: caja.criticidad,
+      zona: caja.zona,
+      sector: caja.sector,
+      tramo: caja.tramo,
+    );
   }
 
   @override
@@ -108,6 +144,18 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
     await db.into(db.botellasEmpalmeTable).insertOnConflictUpdate(
           BotellaEmpalmeMapper.toCompanion(botella),
         );
+    await _updateOperationalFields(
+      tableName: 'botellas_empalme',
+      id: botella.id.value,
+      codigoTecnico: botella.codigoTecnico,
+      referenciaExterna: botella.referenciaExterna,
+      observacionesTecnicas: botella.observacionesTecnicas,
+      estadoOperativo: botella.estadoOperativo,
+      criticidad: botella.criticidad,
+      zona: botella.zona,
+      sector: botella.sector,
+      tramo: botella.tramo,
+    );
   }
 
   @override
@@ -147,4 +195,115 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
       ),
     );
   }
+
+  CajaPonOnt _mapCajaRow(QueryRow row) {
+    final latitude = row.read<double?>('latitude');
+    final longitude = row.read<double?>('longitude');
+
+    return CajaPonOnt(
+      id: OutsidePlantId(row.read<String>('id')),
+      codigo: row.read<String>('codigo'),
+      descripcion: row.read<String>('descripcion'),
+      location: latitude != null && longitude != null
+          ? GeoPoint(latitude: latitude, longitude: longitude)
+          : null,
+      codigoTecnico:
+          _normalizeNullableString(row.read<String?>('codigo_tecnico')),
+      referenciaExterna:
+          _normalizeNullableString(row.read<String?>('referencia_externa')),
+      observacionesTecnicas:
+          _normalizeNullableString(row.read<String?>('observaciones_tecnicas')),
+      estadoOperativo:
+          _normalizeNullableString(row.read<String?>('estado_operativo')),
+      criticidad: row.read<int?>('criticidad'),
+      zona: _normalizeNullableString(row.read<String?>('zona')),
+      sector: _normalizeNullableString(row.read<String?>('sector')),
+      tramo: _normalizeNullableString(row.read<String?>('tramo')),
+      syncStatus: _syncStatusFromDb(row.read<String>('sync_status')),
+      createdAt: row.read<DateTime?>('created_at'),
+      updatedAt: row.read<DateTime?>('updated_at'),
+    );
+  }
+
+  BotellaEmpalme _mapBotellaRow(QueryRow row) {
+    final latitude = row.read<double?>('latitude');
+    final longitude = row.read<double?>('longitude');
+
+    return BotellaEmpalme(
+      id: OutsidePlantId(row.read<String>('id')),
+      codigo: row.read<String>('codigo'),
+      descripcion: row.read<String>('descripcion'),
+      location: latitude != null && longitude != null
+          ? GeoPoint(latitude: latitude, longitude: longitude)
+          : null,
+      codigoTecnico:
+          _normalizeNullableString(row.read<String?>('codigo_tecnico')),
+      referenciaExterna:
+          _normalizeNullableString(row.read<String?>('referencia_externa')),
+      observacionesTecnicas:
+          _normalizeNullableString(row.read<String?>('observaciones_tecnicas')),
+      estadoOperativo:
+          _normalizeNullableString(row.read<String?>('estado_operativo')),
+      criticidad: row.read<int?>('criticidad'),
+      zona: _normalizeNullableString(row.read<String?>('zona')),
+      sector: _normalizeNullableString(row.read<String?>('sector')),
+      tramo: _normalizeNullableString(row.read<String?>('tramo')),
+      syncStatus: _syncStatusFromDb(row.read<String>('sync_status')),
+      createdAt: row.read<DateTime?>('created_at'),
+      updatedAt: row.read<DateTime?>('updated_at'),
+    );
+  }
+
+  Future<void> _updateOperationalFields({
+    required String tableName,
+    required String id,
+    required String? codigoTecnico,
+    required String? referenciaExterna,
+    required String? observacionesTecnicas,
+    required String? estadoOperativo,
+    required int? criticidad,
+    required String? zona,
+    required String? sector,
+    required String? tramo,
+  }) async {
+    await db.customStatement('''
+      UPDATE $tableName
+      SET
+        codigo_tecnico = ${_sqlString(codigoTecnico)},
+        referencia_externa = ${_sqlString(referenciaExterna)},
+        observaciones_tecnicas = ${_sqlString(observacionesTecnicas)},
+        estado_operativo = ${_sqlString(estadoOperativo)},
+        criticidad = ${_sqlInt(criticidad)},
+        zona = ${_sqlString(zona)},
+        sector = ${_sqlString(sector)},
+        tramo = ${_sqlString(tramo)}
+      WHERE id = ${_sqlString(id)}
+    ''');
+  }
+
+  SyncStatus _syncStatusFromDb(String raw) {
+    switch (raw) {
+      case 'pending':
+        return SyncStatus.pending;
+      case 'synced':
+        return SyncStatus.synced;
+      case 'error':
+        return SyncStatus.error;
+      default:
+        return SyncStatus.pending;
+    }
+  }
+
+  String? _normalizeNullableString(String? value) {
+    if (value == null) return null;
+    final normalized = value.trim();
+    return normalized.isEmpty ? null : normalized;
+  }
+
+  String _sqlString(String? value) {
+    if (value == null || value.trim().isEmpty) return 'NULL';
+    return "'${value.trim().replaceAll("'", "''")}'";
+  }
+
+  String _sqlInt(int? value) => value?.toString() ?? 'NULL';
 }
