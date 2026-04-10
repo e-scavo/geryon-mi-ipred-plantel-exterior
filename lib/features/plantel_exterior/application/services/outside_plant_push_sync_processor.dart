@@ -92,6 +92,18 @@ class OutsidePlantPushSyncProcessor {
               item.payloadJson,
             );
         }
+      case 'outside_plant_relationship':
+        switch (item.operationType) {
+          case SyncOperationType.create:
+            return remoteSyncRepository
+                .pushRelationshipCreate(item.payloadJson);
+          case SyncOperationType.update:
+            return remoteSyncRepository
+                .pushRelationshipUpdate(item.payloadJson);
+          case SyncOperationType.delete:
+            return remoteSyncRepository
+                .pushRelationshipDelete(item.payloadJson);
+        }
       default:
         return OutsidePlantRemotePushResult.failure(
           'Unsupported entity type: ${item.entityType}',
@@ -106,14 +118,16 @@ class OutsidePlantPushSyncProcessor {
       return;
     }
 
-    final id = OutsidePlantId(item.entityId);
-
     switch (item.entityType) {
       case 'caja_pon_ont':
-        await repository.markCajaPonOntSynced(id);
+        await repository.markCajaPonOntSynced(OutsidePlantId(item.entityId));
         return;
       case 'botella_empalme':
-        await repository.markBotellaEmpalmeSynced(id);
+        await repository
+            .markBotellaEmpalmeSynced(OutsidePlantId(item.entityId));
+        return;
+      case 'outside_plant_relationship':
+        await repository.markRelationshipSynced(item.entityId);
         return;
     }
   }

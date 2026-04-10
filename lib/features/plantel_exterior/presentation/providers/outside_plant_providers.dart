@@ -11,6 +11,8 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/contr
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/contracts/outside_plant_remote_sync_contract.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/outside_plant_relationship.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 
 final plantelExteriorDatabaseProvider =
     Provider<PlantelExteriorDatabase>((ref) {
@@ -97,6 +99,24 @@ final botellasEmpalmeListProvider =
   final repository = ref.watch(outsidePlantRepositoryProvider);
   await repository.ensureSeedData();
   return repository.getBotellasEmpalme();
+});
+
+final outsidePlantRelationshipsListProvider =
+    FutureProvider<List<OutsidePlantRelationship>>((ref) async {
+  final repository = ref.watch(outsidePlantRepositoryProvider);
+  await repository.ensureSeedData();
+  return repository.getRelationships();
+});
+
+final outsidePlantRelationshipsByEntityProvider = FutureProvider.family<
+    List<OutsidePlantRelationship>,
+    ({String entityType, String entityId})>((ref, args) async {
+  final repository = ref.watch(outsidePlantRepositoryProvider);
+  await repository.ensureSeedData();
+  return repository.getRelationshipsByEntity(
+    entityType: args.entityType,
+    entityId: OutsidePlantId(args.entityId),
+  );
 });
 
 final outsidePlantPendingSyncCountProvider = FutureProvider<int>((ref) async {

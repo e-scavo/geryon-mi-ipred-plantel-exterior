@@ -47,6 +47,27 @@ class OutsidePlantRemoteSyncStubRepository
     return _unavailable();
   }
 
+  @override
+  Future<OutsidePlantRemotePushResult> pushRelationshipCreate(
+    String payloadJson,
+  ) async {
+    return _unavailable();
+  }
+
+  @override
+  Future<OutsidePlantRemotePushResult> pushRelationshipDelete(
+    String payloadJson,
+  ) async {
+    return _unavailable();
+  }
+
+  @override
+  Future<OutsidePlantRemotePushResult> pushRelationshipUpdate(
+    String payloadJson,
+  ) async {
+    return _unavailable();
+  }
+
   OutsidePlantRemotePushResult _unavailable() {
     return OutsidePlantRemotePushResult.failure(
       'Remote sync contract not wired yet. Waiting for real Go structs/tables and backend mapping.',

@@ -17,7 +17,7 @@ class PlantelExteriorDatabase extends _$PlantelExteriorDatabase {
   PlantelExteriorDatabase.withExecutor(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -25,6 +25,7 @@ class PlantelExteriorDatabase extends _$PlantelExteriorDatabase {
           await m.createAll();
           await _createSyncQueueTable();
           await _addOperationalFieldsToOutsidePlantTables();
+          await _createOutsidePlantRelationshipsTable();
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) {
@@ -33,6 +34,10 @@ class PlantelExteriorDatabase extends _$PlantelExteriorDatabase {
 
           if (from < 3) {
             await _addOperationalFieldsToOutsidePlantTables();
+          }
+
+          if (from < 4) {
+            await _createOutsidePlantRelationshipsTable();
           }
         },
       );
@@ -88,6 +93,32 @@ class PlantelExteriorDatabase extends _$PlantelExteriorDatabase {
       await _addColumnIfMissing(
           tableName: tableName, columnName: 'tramo', sqliteType: 'TEXT');
     }
+  }
+
+  Future<void> _createOutsidePlantRelationshipsTable() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS outside_plant_relationships (
+        id TEXT NOT NULL PRIMARY KEY,
+        source_entity_type TEXT NOT NULL,
+        source_entity_id TEXT NOT NULL,
+        target_entity_type TEXT NOT NULL,
+        target_entity_id TEXT NOT NULL,
+        relationship_type TEXT NOT NULL,
+        sync_status TEXT NOT NULL,
+        created_at TEXT NULL,
+        updated_at TEXT NULL
+      )
+    ''');
+
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_outside_plant_relationships_source
+      ON outside_plant_relationships(source_entity_type, source_entity_id)
+    ''');
+
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_outside_plant_relationships_target
+      ON outside_plant_relationships(target_entity_type, target_entity_id)
+    ''');
   }
 
   Future<void> _addColumnIfMissing({

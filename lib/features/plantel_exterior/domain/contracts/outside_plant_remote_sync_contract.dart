@@ -7,9 +7,21 @@ abstract class OutsidePlantRemoteSyncContract {
 
   Future<OutsidePlantRemotePushResult> pushCajaPonOntDelete(String payloadJson);
 
-  Future<OutsidePlantRemotePushResult> pushBotellaEmpalmeCreate(String payloadJson);
+  Future<OutsidePlantRemotePushResult> pushBotellaEmpalmeCreate(
+      String payloadJson);
 
-  Future<OutsidePlantRemotePushResult> pushBotellaEmpalmeUpdate(String payloadJson);
+  Future<OutsidePlantRemotePushResult> pushBotellaEmpalmeUpdate(
+      String payloadJson);
 
-  Future<OutsidePlantRemotePushResult> pushBotellaEmpalmeDelete(String payloadJson);
+  Future<OutsidePlantRemotePushResult> pushBotellaEmpalmeDelete(
+      String payloadJson);
+
+  Future<OutsidePlantRemotePushResult> pushRelationshipCreate(
+      String payloadJson);
+
+  Future<OutsidePlantRemotePushResult> pushRelationshipUpdate(
+      String payloadJson);
+
+  Future<OutsidePlantRemotePushResult> pushRelationshipDelete(
+      String payloadJson);
 }
