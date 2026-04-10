@@ -681,3 +681,8 @@ Added or updated in this subphase:
 - richer operational summaries in the active cajas and botellas listing screens
 - cumulative documentation of the new local-domain scope and explicit reminder that real Go structs remain pending for future backend integration
 - `docs/phase_0_5_1_operational_fields_baseline.md`
+## Phase 0.5.2.1
+
+- `docs/phase_0_5_2_1_relationships_core.md`
+- Introduces the local relationship core for Plantel Exterior
+- Establishes the standalone relationship table as the local truth for entity links

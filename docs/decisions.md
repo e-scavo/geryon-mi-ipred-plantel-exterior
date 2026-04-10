@@ -1145,3 +1145,18 @@ Rule:
 - active create/edit forms must allow capturing the new operational fields
 - active cajas and botellas list screens must expose a useful operational summary
 - empty placeholder wrapper files under `presentation/screens/cajas` and `presentation/screens/botellas` still remain outside the active path until a later cleanup phase
+## Decision — Do not embed 1:1 relationship fields as the primary model
+
+Phase 0.5.2.1 explicitly avoids making caja/botella relationship columns the primary architectural truth.
+
+### Reason
+The real domain already indicates multi-link scenarios:
+- one caja can depend on multiple botellas
+- one caja can depend on multiple cajas
+- derivations can branch repeatedly along the network
+
+### Adopted decision
+Use a dedicated relationship table as the primary local source of truth.
+
+### Consequence
+The module gains a relationship model that is closer to real plant operation while still remaining lightweight and backend-agnostic at this stage.

@@ -949,3 +949,17 @@ Characteristics:
 - operational fields are optional and additive
 - manual push/pull still use the same queue and processors from 0.4.x
 - the richer payload remains local-domain oriented until the final backend contract is introduced
+## Phase 0.5.2.1 — Relationship Core Flows
+
+### Create relationship
+- Persist relationship locally in `outside_plant_relationships`
+- Generate relationship snapshot JSON
+- Enqueue `outside_plant_relationship` create/update operation
+
+### Delete relationship
+- Enqueue delete snapshot for the relationship
+- Remove the relationship locally
+
+### Delete entity with linked relationships
+- Remove linked incoming/outgoing relationships first
+- Remove the caja or botella afterwards

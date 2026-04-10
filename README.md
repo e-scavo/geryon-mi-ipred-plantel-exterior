@@ -835,3 +835,8 @@ Result:
 - the module stops behaving as a minimal CRUD-only surface and starts exposing more realistic outside-plant operational data
 - technical context remains local-domain oriented and does not depend on the final Go structs yet
 - the synchronization baseline remains unchanged while snapshots now carry richer local semantics
+## Phase 0.5.2.1 — Relationships Core
+
+Phase 0.5.2.1 adds a new local-first structural layer for Plantel Exterior by introducing `OutsidePlantRelationship` as a third sync-compatible entity. The relationship core is intentionally modeled in a dedicated table instead of embedding 1:1 references in cajas or botellas.
+
+This preserves support for real operational scenarios such as one caja depending on many botellas or on many downstream cajas, while still keeping the current implementation backend-agnostic and stub-safe.
