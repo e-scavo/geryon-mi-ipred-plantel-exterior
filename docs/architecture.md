@@ -1071,3 +1071,7 @@ Therefore:
 The Plantel Exterior module now introduces `OutsidePlantRelationship` as a dedicated domain entity stored in `outside_plant_relationships`. This relationship layer is kept intentionally independent from `CajaPonOnt` and `BotellaEmpalme` so that real many-link scenarios can be represented without constraining the model to 1:1 references.
 
 The relationship table is the structural local truth for links between plant entities. It remains local-first, sync-compatible, and remote-contract-neutral until the real backend representation is provided.
+
+## Phase 0.5.2.2 — Relationship UI Layer
+
+The presentation layer now adds `OutsidePlantRelationshipsSection` and `OutsidePlantRelationshipEditorDialog` on top of the relationship core from 0.5.2.1. The form remains the owning surface: relationships are edited only when a caja or botella already exists, so the relationship source always has a stable local identifier.

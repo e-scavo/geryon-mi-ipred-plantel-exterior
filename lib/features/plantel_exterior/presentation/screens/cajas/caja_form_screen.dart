@@ -5,6 +5,7 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/geo_point.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_relationships_section.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 
 class CajaFormScreen extends ConsumerStatefulWidget {
@@ -512,6 +513,26 @@ class _CajaFormScreenState extends ConsumerState<CajaFormScreen> {
                           border: OutlineInputBorder(),
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      _SectionTitle(title: 'Relaciones'),
+                      if (!isEditMode || widget.caja == null)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Las relaciones estarán disponibles una vez que el elemento haya sido guardado.',
+                          ),
+                        )
+                      else
+                        OutsidePlantRelationshipsSection(
+                          sourceEntityType: 'caja_pon_ont',
+                          sourceEntityId: widget.caja!.id.value,
+                          sourceEntityLabel: widget.caja!.codigo,
+                        ),
                       if (_errorText != null) ...[
                         const SizedBox(height: 16),
                         Container(

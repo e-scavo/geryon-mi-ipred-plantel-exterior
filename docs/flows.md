@@ -963,3 +963,21 @@ Characteristics:
 ### Delete entity with linked relationships
 - Remove linked incoming/outgoing relationships first
 - Remove the caja or botella afterwards
+
+## Phase 0.5.2.2 — Relationship UI Flows
+
+### Create relationship from form
+- Open an existing caja or botella in edit mode
+- Enter the relationships section
+- Open the relationship dialog
+- Select target entity type, target entity and relationship type
+- Persist the relationship locally and enqueue the pending sync operation
+
+### Delete relationship from form
+- Open the relationships section
+- Confirm deletion for the selected link
+- Remove the relationship locally and enqueue the delete sync operation
+
+### Create mode restriction
+- New entities without a persisted identifier only show an informational message
+- Relationship editing becomes available only after the entity is saved

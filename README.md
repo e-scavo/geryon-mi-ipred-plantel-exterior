@@ -840,3 +840,7 @@ Result:
 Phase 0.5.2.1 adds a new local-first structural layer for Plantel Exterior by introducing `OutsidePlantRelationship` as a third sync-compatible entity. The relationship core is intentionally modeled in a dedicated table instead of embedding 1:1 references in cajas or botellas.
 
 This preserves support for real operational scenarios such as one caja depending on many botellas or on many downstream cajas, while still keeping the current implementation backend-agnostic and stub-safe.
+
+## Phase 0.5.2.2 — Relationships UI Minimum
+
+Phase 0.5.2.2 exposes the relationship core introduced in 0.5.2.1 through a minimal UI layer integrated into the active caja and botella forms. Relationship management remains intentionally compact: it is only available once the source entity has already been saved and it is limited to listing, creating and deleting links.

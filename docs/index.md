@@ -686,3 +686,9 @@ Added or updated in this subphase:
 - `docs/phase_0_5_2_1_relationships_core.md`
 - Introduces the local relationship core for Plantel Exterior
 - Establishes the standalone relationship table as the local truth for entity links
+
+## Phase 0.5.2.2
+
+- `docs/phase_0_5_2_2_relationships_ui_minimum.md`
+- Adds the first usable UI for creating, reviewing and deleting plant relationships
+- Keeps relationship management inside the existing form workflow without introducing a topology screen yet

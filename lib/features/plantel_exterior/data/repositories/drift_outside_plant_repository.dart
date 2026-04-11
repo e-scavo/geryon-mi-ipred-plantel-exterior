@@ -351,7 +351,7 @@ class DriftOutsidePlantRepository implements OutsidePlantRepositoryContract {
       readsFrom: {},
     ).getSingle();
 
-    return (row.read<int>('total') ?? 0) > 0;
+    return (row.read<int>('total')) > 0;
   }
 
   CajaPonOnt _mapCajaRow(QueryRow row) {

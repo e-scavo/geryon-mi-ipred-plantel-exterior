@@ -1160,3 +1160,15 @@ Use a dedicated relationship table as the primary local source of truth.
 
 ### Consequence
 The module gains a relationship model that is closer to real plant operation while still remaining lightweight and backend-agnostic at this stage.
+
+## Decision — Keep relationship UI minimal and form-scoped in 0.5.2.2
+
+Phase 0.5.2.2 deliberately avoids adding a dedicated topology screen or graph editor.
+
+### Adopted decision
+- manage relationships from the active caja and botella forms
+- encapsulate the UI in a reusable section and dialog
+- allow only listing, creation and deletion at this stage
+
+### Consequence
+The module gains a usable operational UI for relationships while preserving the current form workflow and avoiding premature complexity.
