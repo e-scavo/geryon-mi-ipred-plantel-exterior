@@ -1172,3 +1172,9 @@ Phase 0.5.2.2 deliberately avoids adding a dedicated topology screen or graph ed
 
 ### Consequence
 The module gains a usable operational UI for relationships while preserving the current form workflow and avoiding premature complexity.
+
+## Phase 0.5.3 — Search and Filter Decisions
+
+- Search/filter logic was intentionally implemented as local in-memory provider derivation.
+- Remote search and DB-level indexing were deferred because the current need is operational usability, not large-scale query optimization.
+- The baseline keeps only the highest-value criteria visible in the UI to avoid overloading the active listing screens.

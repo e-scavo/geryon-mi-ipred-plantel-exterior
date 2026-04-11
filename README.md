@@ -844,3 +844,7 @@ This preserves support for real operational scenarios such as one caja depending
 ## Phase 0.5.2.2 — Relationships UI Minimum
 
 Phase 0.5.2.2 exposes the relationship core introduced in 0.5.2.1 through a minimal UI layer integrated into the active caja and botella forms. Relationship management remains intentionally compact: it is only available once the source entity has already been saved and it is limited to listing, creating and deleting links.
+
+## Phase 0.5.3 — Search and Filter Baseline
+
+The outside plant active listing screens now include a first local search/filter baseline. This layer remains fully local-first and operates in memory over the already loaded entities, adding quick technician-oriented narrowing by text, operational status, criticality and sync status without introducing remote search or DB/indexing changes.

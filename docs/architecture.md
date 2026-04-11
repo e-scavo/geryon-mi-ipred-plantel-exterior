@@ -1075,3 +1075,7 @@ The relationship table is the structural local truth for links between plant ent
 ## Phase 0.5.2.2 — Relationship UI Layer
 
 The presentation layer now adds `OutsidePlantRelationshipsSection` and `OutsidePlantRelationshipEditorDialog` on top of the relationship core from 0.5.2.1. The form remains the owning surface: relationships are edited only when a caja or botella already exists, so the relationship source always has a stable local identifier.
+
+## Phase 0.5.3 — Presentation Search/Filter Baseline
+
+Phase 0.5.3 introduces a presentation-local search and filter layer for the active outside plant listing screens. The implementation keeps filtering concerns in Riverpod providers and lightweight presentation state rather than pushing them into persistence or sync services. This preserves the existing runtime ownership and avoids re-opening DB or synchronization architecture for a purely navigational concern.

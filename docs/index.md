@@ -692,3 +692,9 @@ Added or updated in this subphase:
 - `docs/phase_0_5_2_2_relationships_ui_minimum.md`
 - Adds the first usable UI for creating, reviewing and deleting plant relationships
 - Keeps relationship management inside the existing form workflow without introducing a topology screen yet
+
+## Phase 0.5.3 — Search and Filter Baseline
+
+- Local search/filter state introduced for the active cajas and botellas listing screens.
+- Filtering remains local, provider-driven and intentionally limited to baseline operational criteria.
+- Detailed close document: `docs/phase_0_5_3_search_and_filter_baseline.md`.

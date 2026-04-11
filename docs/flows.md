@@ -981,3 +981,12 @@ Characteristics:
 ### Create mode restriction
 - New entities without a persisted identifier only show an informational message
 - Relationship editing becomes available only after the entity is saved
+
+## Phase 0.5.3 — Search and Filter Flows
+
+1. The user opens either the cajas or botellas active listing screen.
+2. The screen reads the current local entity list from the existing provider layer.
+3. Search text and compact filter changes update the local presentation filter state.
+4. Filtered providers derive the visible result set in memory.
+5. The UI renders either filtered cards or a contextual empty state when no result matches the current criteria.
+6. The clear action resets the criteria and returns the full list without touching sync or persistence.

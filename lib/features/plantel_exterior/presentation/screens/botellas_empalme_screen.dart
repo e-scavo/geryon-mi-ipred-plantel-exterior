@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_mutations_provider.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
-import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/botellas/botella_form_screen.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/state/outside_plant_search_filters.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_search_filter_bar.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/cajas/caja_form_screen.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
 
-class BotellasEmpalmeScreen extends ConsumerWidget {
-  const BotellasEmpalmeScreen({super.key});
+class CajasPonOntScreen extends ConsumerWidget {
+  const CajasPonOntScreen({super.key});
+
+  static const OutsidePlantSearchFilters _emptyFilters =
+      OutsidePlantSearchFilters.empty;
 
   Future<void> _openCreateForm(BuildContext context) async {
     final message = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const BotellaFormScreen(),
+        builder: (_) => const CajaFormScreen(),
       ),
     );
 
@@ -25,11 +30,11 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
 
   Future<void> _openEditForm(
     BuildContext context,
-    BotellaEmpalme botella,
+    CajaPonOnt caja,
   ) async {
     final message = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => BotellaFormScreen(botella: botella),
+        builder: (_) => CajaFormScreen(caja: caja),
       ),
     );
 
@@ -43,15 +48,15 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
   Future<void> _confirmDelete(
     BuildContext context,
     WidgetRef ref,
-    BotellaEmpalme botella,
+    CajaPonOnt caja,
   ) async {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) {
             return AlertDialog(
-              title: const Text('Eliminar botella'),
+              title: const Text('Eliminar caja'),
               content: Text(
-                '¿Querés eliminar la botella "${botella.codigo}"?\n\nEsta acción no se puede deshacer.',
+                '¿Querés eliminar la caja "${caja.codigo}"?\n\nEsta acción no se puede deshacer.',
               ),
               actions: [
                 TextButton(
@@ -73,14 +78,12 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
     }
 
     try {
-      await ref.read(deleteBotellaEmpalmeProvider(botella).future);
+      await ref.read(deleteCajaPonOntProvider(caja).future);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Botella "${botella.codigo}" eliminada correctamente.',
-            ),
+            content: Text('Caja "${caja.codigo}" eliminada correctamente.'),
           ),
         );
       }
@@ -89,7 +92,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'No se pudo eliminar la botella "${botella.codigo}". ${e.toString()}',
+              'No se pudo eliminar la caja "${caja.codigo}". ${e.toString()}',
             ),
           ),
         );
@@ -99,7 +102,8 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final botellasAsync = ref.watch(botellasEmpalmeListProvider);
+    final cajasAsync = ref.watch(filteredCajasPonOntProvider);
+    final filters = ref.watch(cajasSearchFiltersProvider);
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
@@ -115,7 +119,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Botellas de Empalme',
+                      'Cajas PON / ONT',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -124,7 +128,7 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                   FilledButton.icon(
                     onPressed: () => _openCreateForm(context),
                     icon: const Icon(Icons.add),
-                    label: const Text('Nueva botella'),
+                    label: const Text('Nueva caja'),
                   ),
                 ],
               ),
@@ -134,23 +138,50 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
-              botellasAsync.when(
+              OutsidePlantSearchFilterBar(
+                filters: filters,
+                onQueryChanged: (value) {
+                  ref.read(cajasSearchFiltersProvider.notifier).state =
+                      filters.copyWith(query: value);
+                },
+                onOperationalStatusChanged: (value) {
+                  ref.read(cajasSearchFiltersProvider.notifier).state =
+                      filters.copyWith(operationalStatus: value);
+                },
+                onCriticalityChanged: (value) {
+                  ref.read(cajasSearchFiltersProvider.notifier).state =
+                      filters.copyWith(criticality: value);
+                },
+                onSyncStatusChanged: (value) {
+                  ref.read(cajasSearchFiltersProvider.notifier).state =
+                      filters.copyWith(syncStatus: value);
+                },
+                onClear: () {
+                  ref.read(cajasSearchFiltersProvider.notifier).state =
+                      _emptyFilters;
+                },
+              ),
+              const SizedBox(height: 20),
+              cajasAsync.when(
                 data: (items) {
                   if (items.isEmpty) {
-                    return const _EmptyState(
-                      title: 'Sin botellas registradas',
-                      message:
-                          'Todavía no hay botellas de empalme cargadas en la base local. Usá "Nueva botella" para crear la primera.',
+                    return _EmptyState(
+                      title: filters.hasActiveFilters
+                          ? 'Sin resultados para los filtros actuales'
+                          : 'Sin cajas registradas',
+                      message: filters.hasActiveFilters
+                          ? 'No se encontraron cajas con los criterios seleccionados. Podés ajustar o limpiar los filtros.'
+                          : 'Todavía no hay cajas PON / ONT cargadas en la base local. Usá "Nueva caja" para crear la primera.',
                     );
                   }
 
                   return Column(
                     children: [
-                      for (final botella in items) ...[
-                        _BotellaCard(
-                          botella: botella,
-                          onEdit: () => _openEditForm(context, botella),
-                          onDelete: () => _confirmDelete(context, ref, botella),
+                      for (final caja in items) ...[
+                        _CajaCard(
+                          caja: caja,
+                          onEdit: () => _openEditForm(context, caja),
+                          onDelete: () => _confirmDelete(context, ref, caja),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -158,10 +189,10 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
                   );
                 },
                 loading: () => const _LoadingState(
-                  label: 'Cargando botellas de empalme...',
+                  label: 'Cargando cajas PON / ONT...',
                 ),
                 error: (error, stack) => _ErrorState(
-                  title: 'No se pudieron cargar las botellas de empalme',
+                  title: 'No se pudieron cargar las cajas PON / ONT',
                   message: error.toString(),
                 ),
               ),
@@ -173,13 +204,13 @@ class BotellasEmpalmeScreen extends ConsumerWidget {
   }
 }
 
-class _BotellaCard extends StatelessWidget {
-  final BotellaEmpalme botella;
+class _CajaCard extends StatelessWidget {
+  final CajaPonOnt caja;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _BotellaCard({
-    required this.botella,
+  const _CajaCard({
+    required this.caja,
     required this.onEdit,
     required this.onDelete,
   });
@@ -187,7 +218,7 @@ class _BotellaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final operationalSummary = _buildOperationalSummary(botella);
+    final operationalSummary = _buildOperationalSummary(caja);
 
     return Card(
       elevation: 2,
@@ -205,7 +236,7 @@ class _BotellaCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        botella.codigo,
+                        caja.codigo,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -224,7 +255,7 @@ class _BotellaCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    OutsidePlantSyncStatusBadge(status: botella.syncStatus),
+                    OutsidePlantSyncStatusBadge(status: caja.syncStatus),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
@@ -247,49 +278,45 @@ class _BotellaCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            _InfoRow(label: 'ID', value: botella.id.value),
-            _InfoRow(label: 'Descripción', value: botella.descripcion),
-            if (_hasValue(botella.codigoTecnico))
-              _InfoRow(
-                label: 'Código técnico',
-                value: botella.codigoTecnico!,
-              ),
-            if (_hasValue(botella.referenciaExterna))
+            _InfoRow(label: 'ID', value: caja.id.value),
+            _InfoRow(label: 'Descripción', value: caja.descripcion),
+            if (_hasValue(caja.codigoTecnico))
+              _InfoRow(label: 'Código técnico', value: caja.codigoTecnico!),
+            if (_hasValue(caja.referenciaExterna))
               _InfoRow(
                 label: 'Referencia externa',
-                value: botella.referenciaExterna!,
+                value: caja.referenciaExterna!,
               ),
             _InfoRow(
               label: 'Estado operativo',
-              value: botella.estadoOperativo ?? 'Sin dato',
+              value: caja.estadoOperativo ?? 'Sin dato',
             ),
             _InfoRow(
               label: 'Criticidad',
-              value: botella.criticidad?.toString() ?? 'Sin dato',
+              value: caja.criticidad?.toString() ?? 'Sin dato',
             ),
             _InfoRow(
               label: 'Zona / Sector / Tramo',
-              value:
-                  _buildZoneText(botella.zona, botella.sector, botella.tramo),
+              value: _buildZoneText(caja.zona, caja.sector, caja.tramo),
             ),
-            if (_hasValue(botella.observacionesTecnicas))
+            if (_hasValue(caja.observacionesTecnicas))
               _InfoRow(
                 label: 'Observaciones técnicas',
-                value: botella.observacionesTecnicas!,
+                value: caja.observacionesTecnicas!,
               ),
             _InfoRow(
               label: 'Ubicación',
-              value: botella.location == null
+              value: caja.location == null
                   ? 'Sin ubicación'
-                  : '${botella.location!.latitude}, ${botella.location!.longitude}',
+                  : '${caja.location!.latitude}, ${caja.location!.longitude}',
             ),
             _InfoRow(
               label: 'Creado',
-              value: botella.createdAt?.toIso8601String() ?? 'Sin dato',
+              value: caja.createdAt?.toIso8601String() ?? 'Sin dato',
             ),
             _InfoRow(
               label: 'Actualizado',
-              value: botella.updatedAt?.toIso8601String() ?? 'Sin dato',
+              value: caja.updatedAt?.toIso8601String() ?? 'Sin dato',
             ),
           ],
         ),
@@ -298,23 +325,23 @@ class _BotellaCard extends StatelessWidget {
   }
 }
 
-String _buildOperationalSummary(BotellaEmpalme botella) {
+String _buildOperationalSummary(CajaPonOnt caja) {
   final parts = <String>[];
 
-  if (_hasValue(botella.estadoOperativo)) {
-    parts.add(botella.estadoOperativo!);
+  if (_hasValue(caja.estadoOperativo)) {
+    parts.add(caja.estadoOperativo!);
   }
-  if (botella.criticidad != null) {
-    parts.add('Criticidad ${botella.criticidad}');
+  if (caja.criticidad != null) {
+    parts.add('Criticidad ${caja.criticidad}');
   }
 
-  final zoneText = _buildZoneText(botella.zona, botella.sector, botella.tramo);
+  final zoneText = _buildZoneText(caja.zona, caja.sector, caja.tramo);
   if (zoneText != 'Sin dato') {
     parts.add(zoneText);
   }
 
-  if (_hasValue(botella.codigoTecnico)) {
-    parts.add('Técnico ${botella.codigoTecnico}');
+  if (_hasValue(caja.codigoTecnico)) {
+    parts.add('Técnico ${caja.codigoTecnico}');
   }
 
   return parts.join(' • ');
