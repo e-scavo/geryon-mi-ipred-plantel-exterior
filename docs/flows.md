@@ -990,3 +990,10 @@ Characteristics:
 4. Filtered providers derive the visible result set in memory.
 5. The UI renders either filtered cards or a contextual empty state when no result matches the current criteria.
 6. The clear action resets the criteria and returns the full list without touching sync or persistence.
+
+## Phase 0.5.4 — Inspection Flow
+
+1. The operator searches or filters cajas / botellas from the active listing screens.
+2. The operator selects `Ver detalle` from a card action.
+3. A reusable inspection dialog opens with identity, operational, technical, location, relationship and metadata sections.
+4. The operator can close the inspection surface or proceed to edit from the listing flow if required.

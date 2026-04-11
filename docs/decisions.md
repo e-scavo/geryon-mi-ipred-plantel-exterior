@@ -1178,3 +1178,7 @@ The module gains a usable operational UI for relationships while preserving the 
 - Search/filter logic was intentionally implemented as local in-memory provider derivation.
 - Remote search and DB-level indexing were deferred because the current need is operational usability, not large-scale query optimization.
 - The baseline keeps only the highest-value criteria visible in the UI to avoid overloading the active listing screens.
+
+## Phase 0.5.4 — Dialog-based Inspection
+
+A modal inspection surface was chosen instead of a dedicated route. This keeps navigation stable, separates inspection from editing and provides a lightweight read-only detail layer over the existing active listing screens.

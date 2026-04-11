@@ -698,3 +698,5 @@ Added or updated in this subphase:
 - Local search/filter state introduced for the active cajas and botellas listing screens.
 - Filtering remains local, provider-driven and intentionally limited to baseline operational criteria.
 - Detailed close document: `docs/phase_0_5_3_search_and_filter_baseline.md`.
+
+- `phase_0_5_4_detail_and_inspection_ux.md` — detail and inspection UX over active listing screens, using a reusable dialog-based surface for read-only operational inspection.

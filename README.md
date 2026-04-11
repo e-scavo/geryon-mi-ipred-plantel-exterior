@@ -848,3 +848,7 @@ Phase 0.5.2.2 exposes the relationship core introduced in 0.5.2.1 through a mini
 ## Phase 0.5.3 — Search and Filter Baseline
 
 The outside plant active listing screens now include a first local search/filter baseline. This layer remains fully local-first and operates in memory over the already loaded entities, adding quick technician-oriented narrowing by text, operational status, criticality and sync status without introducing remote search or DB/indexing changes.
+
+## Phase 0.5.4 — Detail and Inspection UX
+
+The active cajas and botellas listing screens now include a dedicated inspection action (`Ver detalle`) that opens a reusable read-only detail dialog. This improves operational reading of technical, location and relationship context without forcing edit mode or adding new routes.

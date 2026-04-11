@@ -1079,3 +1079,7 @@ The presentation layer now adds `OutsidePlantRelationshipsSection` and `OutsideP
 ## Phase 0.5.3 — Presentation Search/Filter Baseline
 
 Phase 0.5.3 introduces a presentation-local search and filter layer for the active outside plant listing screens. The implementation keeps filtering concerns in Riverpod providers and lightweight presentation state rather than pushing them into persistence or sync services. This preserves the existing runtime ownership and avoids re-opening DB or synchronization architecture for a purely navigational concern.
+
+## Phase 0.5.4 — Inspection Surface
+
+A reusable dialog-based inspection surface was introduced for Plantel Exterior active listing screens. The detail layer sits purely in presentation and reads existing providers plus relationship context without changing sync, persistence or routing.

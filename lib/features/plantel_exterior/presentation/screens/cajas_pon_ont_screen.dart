@@ -7,6 +7,7 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_search_filter_bar.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/screens/cajas/caja_form_screen.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_detail_dialog.dart';
 
 class CajasPonOntScreen extends ConsumerWidget {
   const CajasPonOntScreen({super.key});
@@ -43,6 +44,16 @@ class CajasPonOntScreen extends ConsumerWidget {
         SnackBar(content: Text(message)),
       );
     }
+  }
+
+  Future<void> _openDetail(
+    BuildContext context,
+    CajaPonOnt caja,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => OutsidePlantDetailDialog.forCaja(caja),
+    );
   }
 
   Future<void> _confirmDelete(
@@ -180,6 +191,7 @@ class CajasPonOntScreen extends ConsumerWidget {
                       for (final caja in items) ...[
                         _CajaCard(
                           caja: caja,
+                          onInspect: () => _openDetail(context, caja),
                           onEdit: () => _openEditForm(context, caja),
                           onDelete: () => _confirmDelete(context, ref, caja),
                         ),
@@ -206,11 +218,13 @@ class CajasPonOntScreen extends ConsumerWidget {
 
 class _CajaCard extends StatelessWidget {
   final CajaPonOnt caja;
+  final VoidCallback onInspect;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _CajaCard({
     required this.caja,
+    required this.onInspect,
     required this.onEdit,
     required this.onDelete,
   });
@@ -261,6 +275,11 @@ class _CajaCard extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
+                        OutlinedButton.icon(
+                          onPressed: onInspect,
+                          icon: const Icon(Icons.visibility_outlined),
+                          label: const Text('Ver detalle'),
+                        ),
                         OutlinedButton.icon(
                           onPressed: onEdit,
                           icon: const Icon(Icons.edit_outlined),
