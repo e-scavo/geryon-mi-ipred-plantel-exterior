@@ -262,14 +262,17 @@ String _resolveTopologyEntityLabel({
   if (entityType == 'caja_pon_ont') {
     for (final caja in cajas) {
       if (caja.id.value == entityId) {
-        // ✅ FIX
         final codigo = caja.codigo.trim();
-        if (codigo.isNotEmpty) return codigo;
+        if (codigo.isNotEmpty) {
+          return codigo;
+        }
 
         final descripcion = caja.descripcion.trim();
-        if (descripcion.isNotEmpty) return descripcion;
+        if (descripcion.isNotEmpty) {
+          return descripcion;
+        }
 
-        return caja.id.value; // ✅ FIX
+        return caja.id.value;
       }
     }
   }
@@ -277,14 +280,17 @@ String _resolveTopologyEntityLabel({
   if (entityType == 'botella_empalme') {
     for (final botella in botellas) {
       if (botella.id.value == entityId) {
-        // ✅ FIX
         final codigo = botella.codigo.trim();
-        if (codigo.isNotEmpty) return codigo;
+        if (codigo.isNotEmpty) {
+          return codigo;
+        }
 
         final descripcion = botella.descripcion.trim();
-        if (descripcion.isNotEmpty) return descripcion;
+        if (descripcion.isNotEmpty) {
+          return descripcion;
+        }
 
-        return botella.id.value; // ✅ FIX
+        return botella.id.value;
       }
     }
   }
