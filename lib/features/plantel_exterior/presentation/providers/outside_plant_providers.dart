@@ -14,6 +14,7 @@ import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entit
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/outside_plant_relationship.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/enums/sync_status.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/value_objects/outside_plant_id.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/models/outside_plant_topology_summary.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/state/outside_plant_search_filters.dart';
 
 final plantelExteriorDatabaseProvider =
@@ -251,3 +252,118 @@ bool _matchesSyncStatus(SyncStatus itemStatus, String? filterValue) {
 
   return itemStatus.name == filterValue;
 }
+
+String _resolveTopologyEntityLabel({
+  required String entityType,
+  required String entityId,
+  required List<CajaPonOnt> cajas,
+  required List<BotellaEmpalme> botellas,
+}) {
+  if (entityType == 'caja_pon_ont') {
+    for (final caja in cajas) {
+      if (caja.id.value == entityId) {
+        // ✅ FIX
+        final codigo = caja.codigo.trim();
+        if (codigo.isNotEmpty) return codigo;
+
+        final descripcion = caja.descripcion.trim();
+        if (descripcion.isNotEmpty) return descripcion;
+
+        return caja.id.value; // ✅ FIX
+      }
+    }
+  }
+
+  if (entityType == 'botella_empalme') {
+    for (final botella in botellas) {
+      if (botella.id.value == entityId) {
+        // ✅ FIX
+        final codigo = botella.codigo.trim();
+        if (codigo.isNotEmpty) return codigo;
+
+        final descripcion = botella.descripcion.trim();
+        if (descripcion.isNotEmpty) return descripcion;
+
+        return botella.id.value; // ✅ FIX
+      }
+    }
+  }
+
+  return entityId;
+}
+
+final outsidePlantTopologySummaryProvider = FutureProvider.family<
+    OutsidePlantTopologySummary,
+    ({String entityType, String entityId})>((ref, args) async {
+  final relationships = await ref.watch(
+    outsidePlantRelationshipsByEntityProvider(
+      (entityType: args.entityType, entityId: args.entityId),
+    ).future,
+  );
+  final cajas = await ref.watch(cajasPonOntListProvider.future);
+  final botellas = await ref.watch(botellasEmpalmeListProvider.future);
+
+  var incomingCount = 0;
+  var outgoingCount = 0;
+  var connectedCajasCount = 0;
+  var connectedBotellasCount = 0;
+  final relationshipTypeCounts = <String, int>{};
+  final neighbors = <OutsidePlantTopologyNeighbor>[];
+
+  for (final relationship in relationships) {
+    final isOutgoing = relationship.hasSource(
+      entityType: args.entityType,
+      entityId: args.entityId,
+    );
+
+    if (isOutgoing) {
+      outgoingCount++;
+    } else {
+      incomingCount++;
+    }
+
+    relationshipTypeCounts[relationship.relationshipType] =
+        (relationshipTypeCounts[relationship.relationshipType] ?? 0) + 1;
+
+    final otherEntityType = isOutgoing
+        ? relationship.targetEntityType
+        : relationship.sourceEntityType;
+    final otherEntityId =
+        isOutgoing ? relationship.targetEntityId : relationship.sourceEntityId;
+    final otherEntityLabel = _resolveTopologyEntityLabel(
+      entityType: otherEntityType,
+      entityId: otherEntityId,
+      cajas: cajas,
+      botellas: botellas,
+    );
+
+    if (otherEntityType == 'caja_pon_ont') {
+      connectedCajasCount++;
+    } else if (otherEntityType == 'botella_empalme') {
+      connectedBotellasCount++;
+    }
+
+    neighbors.add(
+      OutsidePlantTopologyNeighbor(
+        relationshipId: relationship.id,
+        direction: isOutgoing ? 'outgoing' : 'incoming',
+        relationshipType: relationship.relationshipType,
+        otherEntityType: otherEntityType,
+        otherEntityId: otherEntityId,
+        otherEntityLabel: otherEntityLabel,
+      ),
+    );
+  }
+
+  return OutsidePlantTopologySummary(
+    entityType: args.entityType,
+    entityId: args.entityId,
+    totalRelationships: relationships.length,
+    incomingCount: incomingCount,
+    outgoingCount: outgoingCount,
+    connectedCajasCount: connectedCajasCount,
+    connectedBotellasCount: connectedBotellasCount,
+    relationshipTypeCounts: relationshipTypeCounts,
+    neighbors: neighbors,
+  );
+});

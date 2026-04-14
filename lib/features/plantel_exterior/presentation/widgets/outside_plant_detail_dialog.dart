@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/botella_empalme.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/caja_pon_ont.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/domain/entities/outside_plant_relationship.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/models/outside_plant_topology_summary.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/providers/outside_plant_providers.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_detail_section.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_metadata_row.dart';
 import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_sync_status_badge.dart';
+import 'package:mi_ipred_plantel_exterior/features/plantel_exterior/presentation/widgets/outside_plant_topology_summary_section.dart';
 
 class OutsidePlantDetailDialog extends ConsumerWidget {
   final String entityType;
@@ -120,7 +122,9 @@ class OutsidePlantDetailDialog extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            entityType == 'caja_pon_ont' ? 'Detalle de caja' : 'Detalle de botella',
+                            entityType == 'caja_pon_ont'
+                                ? 'Detalle de caja'
+                                : 'Detalle de botella',
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
@@ -171,12 +175,16 @@ class OutsidePlantDetailDialog extends ConsumerWidget {
                   title: 'Contexto técnico',
                   children: [
                     if (_hasValue(codigoTecnico))
-                      OutsidePlantMetadataRow(label: 'Código técnico', value: codigoTecnico!),
+                      OutsidePlantMetadataRow(
+                          label: 'Código técnico', value: codigoTecnico!),
                     if (_hasValue(referenciaExterna))
-                      OutsidePlantMetadataRow(label: 'Referencia externa', value: referenciaExterna!),
+                      OutsidePlantMetadataRow(
+                          label: 'Referencia externa',
+                          value: referenciaExterna!),
                     OutsidePlantMetadataRow(
                       label: 'Observaciones',
-                      value: observacionesTecnicas ?? 'Sin observaciones técnicas',
+                      value:
+                          observacionesTecnicas ?? 'Sin observaciones técnicas',
                     ),
                   ],
                 ),
@@ -205,12 +213,16 @@ class OutsidePlantDetailDialog extends ConsumerWidget {
                         padding: EdgeInsets.symmetric(vertical: 12),
                         child: LinearProgressIndicator(),
                       ),
-                      error: (error, _) => Text('No se pudieron cargar las relaciones. $error'),
+                      error: (error, _) =>
+                          Text('No se pudieron cargar las relaciones. $error'),
                       data: (relationships) {
-                        final cajas = cajasAsync.valueOrNull ?? const <CajaPonOnt>[];
-                        final botellas = botellasAsync.valueOrNull ?? const <BotellaEmpalme>[];
+                        final cajas =
+                            cajasAsync.valueOrNull ?? const <CajaPonOnt>[];
+                        final botellas = botellasAsync.valueOrNull ??
+                            const <BotellaEmpalme>[];
                         if (relationships.isEmpty) {
-                          return const Text('No hay relaciones vinculadas a este elemento.');
+                          return const Text(
+                              'No hay relaciones vinculadas a este elemento.');
                         }
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,6 +240,23 @@ class OutsidePlantDetailDialog extends ConsumerWidget {
                               .toList(),
                         );
                       },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                OutsidePlantDetailSection(
+                  title: 'Conectividad',
+                  children: [
+                    OutsidePlantTopologySummarySection(
+                      entityType: entityType,
+                      entityId: entityId,
+                      onOpenNeighbor: (neighbor) => _openNeighborDetail(
+                        context: context,
+                        cajas: cajasAsync.valueOrNull ?? const <CajaPonOnt>[],
+                        botellas: botellasAsync.valueOrNull ??
+                            const <BotellaEmpalme>[],
+                        neighbor: neighbor,
+                      ),
                     ),
                   ],
                 ),
@@ -254,7 +283,41 @@ class OutsidePlantDetailDialog extends ConsumerWidget {
     );
   }
 
-  static bool _hasValue(String? value) => value != null && value.trim().isNotEmpty;
+  Future<void> _openNeighborDetail({
+    required BuildContext context,
+    required List<CajaPonOnt> cajas,
+    required List<BotellaEmpalme> botellas,
+    required OutsidePlantTopologyNeighbor neighbor,
+  }) async {
+    Navigator.of(context).pop();
+
+    if (neighbor.otherEntityType == 'caja_pon_ont') {
+      for (final caja in cajas) {
+        if (caja.id.value == neighbor.otherEntityId) {
+          await showDialog<void>(
+            context: context,
+            builder: (_) => OutsidePlantDetailDialog.forCaja(caja),
+          );
+          return;
+        }
+      }
+    }
+
+    if (neighbor.otherEntityType == 'botella_empalme') {
+      for (final botella in botellas) {
+        if (botella.id.value == neighbor.otherEntityId) {
+          await showDialog<void>(
+            context: context,
+            builder: (_) => OutsidePlantDetailDialog.forBotella(botella),
+          );
+          return;
+        }
+      }
+    }
+  }
+
+  static bool _hasValue(String? value) =>
+      value != null && value.trim().isNotEmpty;
 
   static String _buildZoneText(String? zona, String? sector, String? tramo) {
     final values = [zona, sector, tramo]
@@ -289,8 +352,11 @@ class _ReadOnlyRelationshipTile extends StatelessWidget {
       entityId: currentEntityId,
     );
     final arrow = isSource ? '→' : '←';
-    final otherType = isSource ? relationship.targetEntityType : relationship.sourceEntityType;
-    final otherId = isSource ? relationship.targetEntityId : relationship.sourceEntityId;
+    final otherType = isSource
+        ? relationship.targetEntityType
+        : relationship.sourceEntityType;
+    final otherId =
+        isSource ? relationship.targetEntityId : relationship.sourceEntityId;
     final otherLabel = _resolveEntityLabel(otherType, otherId);
 
     return Container(
